@@ -1,0 +1,917 @@
+# -*- coding: cp1252 -*-
+"""
+Description: this file contains methods for the computation of superpixels based on the watershed.
+"""
+
+#import os
+import pdb
+from time import time
+import cv2
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+import morphee as mm
+from MorpheeNumpyPython import numpyArrayToImage
+import MorpheeFastAreaOpeningPython as fao
+
+USE_SMIL = False
+
+LABEL_TYPE = "UINT32"
+GRAD_TYPE = "UINT32"
+
+######################################
+
+if USE_SMIL is True:
+    import specialisation_smil as ss
+else:
+    ss = mm
+
+
+##############################################################################################
+def im_labelled_grid_points(size, step, hexa = False,  margin = 1):
+    """
+    Creates an image filled with zeros, except on points whose coordinates are of the sort 
+    step/2 + k* step, 
+    which are labelled.
+    Input:
+    size : list of 2d dimensions of output image (should some day be extended to 3d)
+    step: grid steps (we suppose that the step is the same in all directions)
+    hexa = use hexagonal grid (in 2d) or cuboctahedric grid (in 3d) (NOT IMPLEMENTED YET in 3D)
+
+    Output:
+    imout : UINT32 image containing the labelled grid.
+    """
+
+    np_im = np.zeros(size, np.uint8)
+    if hexa is False:
+        np_im[step/2::step, step/2::step] = 1
+        se = mm.SquareSE
+    else:
+        r3 = np.sqrt(3)
+        a= step/ r3 ## prendre a =step/r3 pour que step = distance entre deux centres, ou a = step/2.0 si l'on veut step = diamètre du cercle circonscrit
+        dv = r3/2.0 * a
+        dh = 3/2.0 * a
+        pv = r3*a
+        ph = 3*a
+        tv = size[1]
+        th =  size[0]
+
+        dv_ad = np.floor(min(  tv - int(np.floor(tv/pv))*pv  ,   tv - (int(np.floor((tv-dv)/pv))*pv + dv)   ) / 2 )
+        dh_ad = np.floor(min(  th - int(np.floor(th/ph))*ph  ,   th - (int(np.floor((th-dh)/ph))*ph + dh)   ) / 2 )
+
+        np_im[ dh + dh_ad :: ph,  dv_ad :: pv ] = 1
+        np_im[  dh_ad :: ph, dv + dv_ad :: pv ] = 1
+
+        se = mm.HexSE
+
+    imtmp = numpyArrayToImage(np_im)
+    ##mm.ImDisplay(imtmp, "grille")
+
+    imout = mm.getSameOf(imtmp, mm.dataCategory.dtScalar, mm.scalarDataType.sdtUINT16)
+
+    ss.ImLabel(imtmp, se, imout)
+    ##mm.ImDisplayX(imout, "im_labelled_grid_points")
+    imout2 = mm.ImCreateSame(imout,  "UINT32")
+    mm.ImDilate(imout,  mm.HomotheticSE(se, step/2 -margin),  imout2)
+    ##mm.ImDisplay(imout2,  "cell")
+
+    #print("Number of initial seeds: %s"%(mm.measMinMax(imout)[1]))
+
+    return imout,  imout2
+
+
+##############################################################################################
+def im_labelled_square_grid_points(size, step, margin=1):
+    """
+    Creates an image filled with with zeros, except on points whose coordinates are of the sort 
+    step/2 + k* step, which are labelled.
+    Input:
+    size : list of 2d dimensions of output image (should some day be extended to 3d)
+    step: grid steps (we suppose that the step is the same in all directions)
+
+    Output:
+    imout (UINT8): image containing the grid centers, with value 1
+    imout2 (UINT16 or UINT32): image containing the labelled cells
+    """
+#    if LABEL_TYPE == "UINT16":
+#        np_type = np.uint16
+#    else:
+#        np_type = np.uint32
+    np_type = np.uint16
+    np_im = np.zeros(size, np.uint8)
+    cells_im = np.zeros(size, np_type)
+    label = 1
+    for x in range(size[0]/step+1):
+        for y in range(size[1]/step+1):
+            center_x = np.min([ x*step + step/2, size[0]-1])
+            center_y = np.min([ y*step + step/2, size[1]-1])
+            np_im[center_x, center_y] = 1
+            cells_im[x*step+margin:(x+1)*step-margin, y*step+margin:(y+1)*step-margin] = label
+            label += 1
+    imout = numpyArrayToImage(np_im)
+    imout2 = numpyArrayToImage(cells_im)
+
+    return (imout, imout2)
+
+def im_labelled_square_grid_points_v2(size, step, margin=1):
+    """
+    Creates an image filled with with zeros, except on points whose coordinates are of the sort 
+    step/2 + k* step, which are labelled.
+    Input:
+    size : list of 2d dimensions of output image (should some day be extended to 3d)
+    step: grid steps (we suppose that the step is the same in all directions)
+
+    Output:
+    imout (UINT8): image containing the grid centers, with value 1
+    imout2 (UINT16 or UINT32): image containing the labelled cells
+    """
+#    if LABEL_TYPE == "UINT16":
+#        np_type = np.uint16
+#    else:
+#        np_type = np.uint32
+    np_type = np.uint16
+    np_im = np.zeros(size, np.uint8)
+    cells_im = np.zeros(size, np_type)
+    #print "x_size, y_size_",  size[0], " _ ",  size[1]
+    label = 1
+    dx = (size[0]-1 - ((size[0]-1) / step) * step) / 2
+    dy = (size[1]-1 - ((size[1]-1) / step) * step) / 2
+    #print "dx, dy", dx,  " _ ", dy
+    for x in range((size[0]-1 - dx)/step+1):
+        for y in range((size[1]-1 - dy)/step+1):
+            center_x =  x*step + dx 
+            center_y =  y*step + dy 
+            #print "center_x, center_y", center_x, " _ ",  center_y
+            np_im[center_x, center_y] = 1
+            cells_im[np.max([(center_x - step/2 + margin), 0]) : np.min([(center_x + step/2 - margin),  size[0]-1]), np.max([(center_y - step/2 + margin), 0]) : np.min([(center_y + step/2 - margin),  size[1]-1])] = label
+            label += 1
+    imout = numpyArrayToImage(np_im)
+    imout2 = numpyArrayToImage(cells_im)
+#    mm.ImDisplay(imout,  "imout")
+#    mm.ImDisplay(imout2,  "imout2")
+    return (imout, imout2)
+
+def im_labelled_square_grid_points_v3(size, step, margin=1):
+    """
+    Creates an image filled with with zeros, except on points whose coordinates are of the sort 
+    step/2 + k* step, which are labelled.
+    Input:
+    size : list of 2d dimensions of output image (should some day be extended to 3d)
+    step: grid steps (we suppose that the step is the same in all directions)
+
+    Output:
+    imout (UINT8): image containing the grid centers, with value 1
+    imout2 (UINT16 or UINT32): image containing the labelled cells
+    """
+
+    if LABEL_TYPE == "UINT16":
+        np_type = np.uint16
+    else:
+        np_type = np.uint32
+
+    np_im = np.zeros(size, np.uint8)
+    cells_im = np.zeros(size, np_type)
+    print "x_size, y_size_",  size[0], " _ ",  size[1]
+
+    label = 1
+    dx = (size[0]-1 - ((size[0]-1) / step) * step) / 2
+    dy = (size[1]-1 - ((size[1]-1) / step) * step) / 2
+    print "dx, dy", dx,  " _ ", dy
+    
+
+    for x in range((size[0]- step/2 - 2*dx)/step +10):
+        for y in range((size[1]- step/2 - 2*dy)/step +10):
+            if x*step + dx + step/2<size[0]:
+                if y*step + dy + step/2<size[1]:
+                    if 2*dx< step/2:
+                        center_x =  x*step + dx + step/2
+                    else:
+                        center_x =  x*step + dx
+                    if 2*dy< step/2:
+                        center_y =  y*step + dy + step/2
+                    else:
+                        center_y =  y*step + dy
+                    print "center_x, center_y", center_x, " _ ",  center_y
+                    np_im[center_x, center_y] = 1
+                    cells_im[np.max([(center_x - step/2 + margin), 0]) : np.min([(center_x + step/2 - margin),  size[0]-1]), np.max([(center_y - step/2 + margin), 0]) : np.min([(center_y + step/2 - margin),  size[1]-1])] = label
+                    label += 1
+
+
+    for x in range((size[0]- step/2 - 2*dx)/step +10):
+        for y in range((size[1]- step/2 - 2*dy)/step +10):
+            if x*step + dx + step/2<size[0]:
+                if y*step + dy + step/2<size[1]:
+                    if 2*dx< step/2:
+                        center_x =  x*step + dx + step/2
+                    else:
+                        center_x =  x*step + dx
+                    if 2*dy< step/2:
+                        center_y =  y*step + dy + step/2
+                    else:
+                        center_y =  y*step + dy
+                    print "center_x, center_y", center_x, " _ ",  center_y
+                    np_im[center_x, center_y] = 1
+                    cells_im[np.max([(center_x - step/2 + margin), 0]) : np.min([(center_x + step/2 - margin),  size[0]-1]), np.max([(center_y - step/2 + margin), 0]) : np.min([(center_y + step/2 - margin),  size[1]-1])] = label
+                    label += 1
+
+    imout = numpyArrayToImage(np_im)
+    imout2 = numpyArrayToImage(cells_im)
+    mm.ImDisplay(imout,  "imout")
+    mm.ImDisplay(imout2,  "imout2")
+    pdb.set_trace()
+
+    return (imout, imout2)
+##############################################################################################
+def one_min_per_grid_cell(im_cells, im_labelled_minima, se, imdist):
+    """
+    Keeps only one connected component of im_labelled_minima per cell.
+    Output written on im_labelled_minima.
+
+    Input:
+    im_cells: labelled cells
+    im_labelled_minima: minima
+    se: structuring element or neighbour list giving the image connectivity
+
+    Output:
+    im_labelled_minima: image containing only one connected component per cell.
+    """
+    ## a revoir
+    # v = mm.ImDisplayX
+
+##    mm.ImDisplayX(im_cells, "im_cells")
+##    im_sup1=mm.getSame(im_cells)
+##    mm.ImCompare(im_cells,">", 0, im_labelled_minima, 1, im_sup1)
+##    mm.ImDisplayX(im_sup1, "im_sup1")
+
+    if 0:
+        im_label = mm.getSame(im_cells)
+        mm.ImLabel(im_labelled_minima, se, im_label)
+        mm.ImLabelWithMax(im_cells, im_label, se, im_labelled_minima)
+        mm.ImCompare(im_labelled_minima, "==", im_label, im_label, 0, im_label)
+        mm.ImLabel(im_label, se, im_labelled_minima)
+
+    #alternative: prendre le minimum le plus proche du centre de la cellule:
+
+    if 1:
+        im_min_dist = mm.getSame(imdist)
+        im_min_dist16 = mm.ImCreateSame(im_cells, "UINT16")
+        min_dist = mm.ImCreateSame(im_cells, "UINT16")
+        im_cell_min = mm.ImCreateSame(im_cells, "UINT16")
+        im_one_min = mm.ImCreateSame(im_cells, "UINT16")
+        im_one_min_lab = mm.ImCreateSame(im_cells, "UINT16")
+
+        ### selection of the minimum (or the minima) closest to the center of each cell:
+        mm.arithAddImageConst(imdist, 1, imdist)# pour différencier du fond par la suite (au cas où un minimum soit au centre de la cellule)
+        mm.ImCompare(im_labelled_minima, ">", 0, imdist, 255, im_min_dist)
+        ss.ImCopy(im_min_dist, im_min_dist16)
+        mm.ImLabelWithMin(im_cells, im_min_dist16, se, im_cell_min)        
+        mm.ImCompare(im_cell_min, "==", im_min_dist16, im_min_dist16, 0, im_one_min)        
+        mm.ImMinima(imdist, se, min_dist)
+        mm.ImCompare(im_one_min, "==", 255, min_dist, im_one_min, im_one_min)
+        mm.ImLabel(im_one_min, se, im_one_min_lab)
+        ss.ImCopy(im_one_min_lab, im_labelled_minima)
+
+        ### selection of a unique minimum (per cell) among the set of minima defined previously:
+        im_label = mm.getSame(im_cells)
+        ss.ImLabel(im_labelled_minima, se, im_label)
+        mm.ImLabelWithMax(im_cells, im_label, se, im_labelled_minima)
+        mm.ImCompare(im_labelled_minima, "==", im_label, im_label, 0, im_label)
+        ss.ImLabel(im_label, se, im_labelled_minima)
+
+##    im_sup=mm.getSame(im_cells)
+##    mm.ImCompare(im_labelled_minima,">", 0, 0, im_cells, im_sup)
+##    mm.ImDisplayX(im_sup, "im_sup2")
+
+    return
+
+##############################################################################################
+def one_min_per_grid_cell_v2(im_cells, im_labelled_minima, se):
+    """
+    Keeps only one connected component of im_labelled_minima per cell.
+    Output written on im_labelled_minima.
+
+    Input:
+    im_cells: labelled cells
+    im_labelled_minima: minima valued with an extinction value
+    se: structuring element or neighbour list giving the image connectivity
+
+    Output:
+    im_labelled_minima: image containing only one connected component per cell (most of the time).
+    """
+
+    imtmp = mm.getSame(im_cells)
+    mm.ImLabelWithMax(im_cells, im_labelled_minima, se, imtmp)
+    mm.ImCompare(im_labelled_minima, "==", imtmp, im_labelled_minima, 0, im_labelled_minima)
+
+    ss.ImLabel(im_labelled_minima, se, imtmp)
+    mm.ImLabelWithMax(im_cells, imtmp, se, im_labelled_minima)
+    mm.ImCompare(imtmp, "==", im_labelled_minima, imtmp, 0, imtmp)
+    mm.ImCompare(im_cells, "==", 0, 0, imtmp, im_labelled_minima) 
+
+    return
+
+##############################################################################################
+def my_gradient(imin, se, grey=False):
+    """
+    Returns morphological gradient for grey level images, or the LAB gradient for color images.
+
+    Input:
+    imin : grey level or color image
+    se : 
+    grey (Bool): if set to True, on colour images we compute the mm gradient on the green channel.
+
+    Output:
+    imout : UINT8 image containing the gradient
+    """
+
+    if imin.dataCategory == mm.dataCategory.dtPixel3:
+        if grey is True:
+            im_list = mm.extractChannels(imin)
+            imout = mm.getSame(im_list[1])
+            ss.ImMorphoGradient(im_list[1], se, imout)
+        else:
+            #imout = mm.ImGradient_HLS_weighted(imin, se)
+            imout = mm.ImGradient_LAB(imin, se)
+    else:
+        imout = mm.getSame(imin)
+        ss.ImMorphoGradient(imin, se, imout)
+
+    return imout
+
+#########################################################################
+def gray_area_filtering(imin, size, hexa,  imout):
+    """
+    Gray level area filtering
+    """
+    im_tmp = mm.getSame(imin)
+    if hexa == False:
+        fao.ImAreaClosing_MaxTree(imin, size, im_tmp)
+        fao.ImAreaOpening_MaxTree(im_tmp, size, imout)
+    else :
+        mm.ImAreaClosing(imin,  mm.HexSE, size,  im_tmp)
+        mm.ImAreaOpening(im_tmp,  mm.HexSE,  size,  imout)
+
+    return imout 
+
+#########################################################################
+def my_area_filtering(imin, size, hexa,  imout):
+    """
+    Fast alternate area filter
+    """
+    if imin.dataCategory == mm.dataCategory.dtPixel3: 
+        im_list = mm.extractChannels(imin)
+        im_tmp = mm.getSame(im_list[0])
+        for im in im_list:
+            gray_area_filtering(im, size, hexa, im_tmp)
+            ss.ImCopy(im_tmp, im)
+        mm.colorComposeFrom3(im_list[0], im_list[1], im_list[2], imout)
+    else:
+        gray_area_filtering(imin, size, hexa, imout)
+
+    return imout
+
+#########################################################################
+def gray_area_filtering_for_gradient(imin, size, hexa,  imout):
+    """
+    Gray level area filtering for imin = gradient
+    """
+    im_tmp = mm.getSame(imin)
+    if hexa == False:
+        #fao.ImAreaClosing_MaxTree(imin, size, imout)
+        #mm.ImAreaClosing(imin,  mm.SquareSE, size,  imout)
+        mm.ImCopy(imin,  imout)
+    else :
+        mm.ImAreaClosing(imin,  mm.HexSE, size,  imout)
+
+
+
+#########################################################################
+def my_area_filtering_for_gradient(imin, size, hexa,  imout):
+    """
+    Fast alternate area filter for imin = gradient
+    """
+    if imin.dataCategory == mm.dataCategory.dtPixel3: 
+        im_list = mm.extractChannels(imin)
+        im_tmp = mm.getSame(im_list[0])
+        for im in im_list:
+            gray_area_filtering_for_gradient(im, size, hexa, im_tmp)
+            ss.ImCopy(im_tmp, im)
+        mm.colorComposeFrom3(im_list[0], im_list[1], im_list[2], imout)
+    else:
+        gray_area_filtering_for_gradient(imin, size, hexa, imout)
+
+
+
+##############################################################################################
+def my_ImAFLeveling(imin, se, size):
+    """
+    Color and grey level leveling
+    """
+    imout = mm.getSame(imin)
+
+    if imin.dataCategory == mm.dataCategory.dtPixel3: 
+        im_list = mm.extractChannels(imin)
+        imtmp = mm.getSame(im_list[0])
+        for im in im_list:
+            mm.ImAFLeveling(im, se, size, imtmp)
+            ss.ImCopy(imtmp, im)
+        mm.colorComposeFrom3(im_list[0], im_list[1], im_list[2], imout)
+    else:
+        mm.ImAFLeveling(imin, se, size, imout)
+
+
+    return imout
+
+
+
+##############################################################################################
+def get_se_from_connex(hexa):
+    """
+    Returns a size 1 structuring element.
+    Input:
+    hexa (bool): if True, a hexagonal grid is used, otherwise an 8 connexity is considered.
+    Output:
+    Structuring element.
+    """
+    if hexa is True:
+        basicse = mm.HexSE
+        gridse = mm.HexSE
+    else:
+        basicse = mm.CrossSE
+        gridse = mm.SquareSE
+    return basicse, gridse
+
+##############################################################################################
+def mult_image_with_float(imin, k):
+    """ 
+    Fonction permettant de multiplier une image d'entiers par un facteur k flottant, 
+    et de recuperer l image d entiers resultants apres arrondi.
+    Input image is supposed to be of type UINT8. Result values above 255 are truncated.
+    """
+
+    # Image multiplication by float factor k:
+    imin_float = mm.ImCreateSame(imin, "F_SIMPLE")
+    mm.ImCopy(imin, imin_float)
+    mm.arithMultImageConst(imin_float, k, imin_float)
+
+    mm.ImCompare(imin_float, ">", 255, 255, imin_float, imin_float)
+    im_res = mm.getSame(imin)
+    mm.ImCopy(imin_float, im_res)
+
+    return im_res
+
+
+##############################################################################################
+def getImageToRange(imin, stop):
+    """ Fonction destinee a convertir la dynamique de l image imin en [0, stop].
+    stop : scalar, usually 255, 65535 or 65536*65536-1."""
+
+    if (stop != 255) and (stop != 65535) and (stop != 65536*65536-1):
+        im_res2 = ["error"]
+    else:
+        # Image properties:
+        x_size = imin.getXSize()
+        y_size = imin.getYSize()
+        z_size = imin.getZSize()
+
+        # Image conversion:
+        imin_tab = mm.ImageToArray(imin)
+        max_value = float(max(imin_tab))
+        imin_tab_clip = [element*stop/max_value for element in imin_tab]
+        imin_tab_clip_round = np.around(imin_tab_clip)
+        imin_tab_clip_int = [int(element) for element in imin_tab_clip_round]
+        im_res = mm.ArrayToImage(imin_tab_clip_int, x_size, y_size, z_size)
+
+        # creation de im_res2:
+        if (stop == 255):
+            im_res2 = mm.ImCreateSame(imin, "UINT8")
+        elif (stop == 65535):
+            im_res2 = mm.ImCreateSame(imin, "UINT16")
+        else:
+            im_res2 = mm.ImCreateSame(imin, "UINT32")
+        ss.ImCopy(im_res, im_res2)
+
+    return im_res2
+
+##############################################################################################
+def power_image_with_int(imin, k):
+    """ Fonction destinee a elever a la puissance k chaque pixel de l image imin. k doit etre entier."""
+    # Image properties:
+    x_size = imin.getXSize()
+    y_size = imin.getYSize()
+    z_size = imin.getZSize()
+
+    # Image conversion to list:
+    imin_tab = mm.ImageToArray(imin)
+    imin_tab_pow = np.power(imin_tab, k)
+    imin_tab_pow_round = np.around(imin_tab_pow)
+    imin_tab_pow_int = [int(element) for element in imin_tab_pow_round]
+    im_res = mm.ArrayToImage(imin_tab_pow_int, x_size, y_size, z_size)
+
+    return im_res
+
+##############################################################################################
+def mean_2_images(im1, im2, im_out):
+    """
+    Computes the mean of two images.
+    """
+    im_tmp = mm.getSame(im1)
+    mm.arithDivImageConst(im1, 2, im_tmp)
+    mm.arithDivImageConst(im2, 2, im_out)
+    mm.arithAddImage(im_tmp, im_out, im_out)
+
+
+##############################################################################################
+def water_pixels_m2(imin, step, d_weight, hexa, filter_grad, filter_ori, op='ADD'):
+    """
+    Computes watershed based superpixels starting from the "best" minimum of each cell.
+
+    The gradient is regularized using the distance function to the cells centers.
+
+    Input:
+    imin (image UINT8) : original image, to be segmented into superpixels
+    step (UINT8) : grid step, i.e. distance between superpixels starting points
+    d_weight (UINT8): constant to be multiplied with function distance before addition to gradient image.
+        If d_weight <= 0, then only the gradient is taken into account.
+    hexa (BOOLEAN) : do we use an hexagonal grid?
+    filter_grad (BOOLEAN) : do we filter the gradient image ?
+    filter_ori (BOOLEAN) : de we filter the input image ?
+
+    Output:
+    image (UINT32) : labelled superpixels
+    image (UINT8) : distance weighted gradient function
+    image (UINT32) : minima used in the computation
+    """
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    # Connexity:
+    basicse, gridse1 = get_se_from_connex(hexa)
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    # Ori filtering
+    if filter_ori is True:
+        _start = time()
+        imin_filt = mm.getSame(imin)
+        my_area_filtering(imin, step*step/16, hexa,  imin_filt)
+        mm.ImCopy(imin_filt, imin)
+        _end = time()
+        print("Ori filtering time: %s" % (1000*(_end-_start)))
+        
+        ##
+
+    else:
+        imin_filt = imin
+
+    # Gradient computation
+    _start = time()
+    im_grad = my_gradient(imin, basicse,  False)
+    _end = time()
+    print(" Gradient time: %s" % (1000*(_end-_start)))
+
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+    # Compute cell centers and cells
+    _start = time()
+    size = imin.getSize()
+    if hexa==False:
+        im_markers, im_cells = im_labelled_square_grid_points(size, step, step/6) 
+    else:
+        im_markers, im_cells = im_labelled_grid_points(size, step,  True,  step/6)
+    _end = time()
+    print("Cells time: %s" % (1000*(_end-_start)))
+
+
+    # Distance function
+    _start = time()
+    immask = mm.getSame(im_markers)
+    mm.ImCompare(im_markers, ">", 0, 0, 1, immask)
+    imdist = mm.getSame(immask)
+    mm.Distance(immask, gridse1, imdist)
+    _end = time()
+    print("Distance time: %s" % (1000*(_end-_start)))
+
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+    # Regularize gradient with distance
+    im_grad32 = mm.ImCreateSame(im_grad, GRAD_TYPE)
+    im_grad32_noreg = mm.ImCreateSame(im_grad, GRAD_TYPE)
+    ss.ImCopy(im_grad, im_grad32)
+    ss.ImCopy(im_grad, im_grad32_noreg)
+
+    _start = time()
+    if d_weight > 0:
+        if hexa is True:
+            r3 = float(np.sqrt(3))
+            weight = d_weight * r3/step
+        else:
+            weight =  d_weight * float(2)/step
+        if (op=='ADD'):
+            imdist2 = mult_image_with_float(imdist, weight)
+            im_grad32 = mm.ImCreateSame(imdist2, GRAD_TYPE)
+            ss.ImCopy(im_grad, im_grad32)
+            imtmp = mm.ImCreateSame(imdist2, GRAD_TYPE)
+            ss.ImCopy(imdist2, imtmp)
+            mm.arithAddImage(imtmp, im_grad32, im_grad32)
+        else:
+            raise ValueError("Variable op should be equal to ADD, for now")
+        ss.ImCopy(im_grad32, im_grad)
+    _end = time()
+    print("Gradient regularization time: %s" % (1000*(_end-_start)))
+    ##mm.ImDisplay(im_grad,  "imgrad")
+
+
+
+    # Compute local maxima of the regularized gradient
+    im_maxima_grad = mm.getSame(im_grad32)
+    mm.ImMaxima(im_grad32, basicse, im_maxima_grad)
+
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+
+    # Minima computation and evaluation
+    ## Minima of the gradient:
+    imwo = mm.ImCreateSame(im_grad,  "UINT16")
+    _start = time()
+    im_minima_val = mm.ImCreateSame(im_grad, LABEL_TYPE)
+    im_minima32 = mm.getSame(im_minima_val)
+    mm.ImMinima(im_grad32_noreg, basicse, im_minima32)
+    _end = time()
+    print("Minima computation: %s" % (1000*(_end-_start)))
+    ss.ImCopy(im_minima32,  imwo)
+
+    ## Impose a minimum distance between minima by splitting minima along the grid :
+    _start = time()
+    im_minima_tmp = mm.getSame(im_minima32)
+    mm.ImCompare(im_cells, ">", 0, im_minima32, 0, im_minima_tmp)
+    ss.ImLabel(im_minima_tmp, basicse, im_minima32)
+
+
+
+
+    ## Evaluation of the importance of "split" minima : volumic extinction
+    mm.ImLabelMarkersWithExtinctionValues_Area( im_grad32_noreg, im_minima32, basicse, im_minima_val)
+
+
+    ## NEW : Cope problem of minima disapearances (due to labelization with volumic extinction) : take back minima which have disapeared (with value set to 1)
+    imwo1 = mm.getSame(im_minima32)
+    mm.ImCompare( im_minima32,  ">",  0,  2,  0,  imwo1 )
+    mm.ImCompare( im_minima_val,  ">",  0, im_minima_val, imwo1, im_minima_val  )
+
+    ## cell minima are added to cope with the potential absence of minima in some cells:
+## autre possibilité : ajouter un minimum de la cellule du grad (éviter max du grad reg)
+    imtmp1 = mm.getSame(im_cells)
+    imtmp2= mm.getSame(im_cells)
+    ## minima calculés sur chaque cellule indep.
+    mm.ImLabelWithMin(im_cells, im_grad32_noreg, basicse, imtmp2)
+    mm.ImCompare( im_grad32_noreg, "==", imtmp2, 1, 0, imtmp2)
+    ## étape à garder car il faut éviter les maxima du gradient régularisé
+    mm.ImCompare(im_maxima_grad, "==", 1, 0, imtmp2, imtmp2) 
+    ## ajout de ces marqueurs seulement si cellule sans minimum
+    mm.ImLabelWithMax(im_cells, im_minima_val, basicse, imtmp1)
+    mm.ImCompare(imtmp1, "==", 0, imtmp2, im_minima_val, im_minima_val)
+    _end = time()
+    print("Minima evaluation time: %s" % (1000*(_end-_start)))
+
+    # Select minima
+    _start = time()
+    one_min_per_grid_cell_v2(im_cells, im_minima_val, basicse)
+    #mm.ImDisplay(im_minima_val, 'minima_sel')
+    _end = time()
+    print("Minima selection time: %s" % (1000*(_end-_start)))
+
+    mm.ImCompare(im_minima_val,  ">",  0,  1,  0,  imwo)
+    mm.pngFileWrite(imwo,  "minval_apres_ajout_centres.png")
+
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+    # Segmentation from minima on final gradient
+    _start = time()
+    imout = mm.getSame(im_minima_val)
+    im_tmp = mm.getSame(im_minima_val)
+    ss.ImLabel(im_minima_val, basicse, im_tmp)
+    ss.ImBasins(im_grad32, im_tmp, basicse, imout)
+    _end = time()
+    print("Segm time: %s" % (1000*(_end-_start)))
+    print("Number of final seeds: %s\n\n"%(mm.measMinMax(im_tmp)[1]))
+
+
+
+    return (imout, im_grad32, im_minima_val)
+
+
+############################################
+########################################################################################
+########################################################################################
+def get_labels_to_value(imin, value):
+	"""Fonction destinée à mettre tous les labels strictement positifs à value."""
+
+	imout = mm.getSame(imin)
+	mm.ImCompare(imin, ">", 0, value, 0, imout)
+
+	return imout
+
+########################################################################################
+##############################################################################################
+def water_pixels_m1(imin, step, d_weight, hexa, filter_grad, filter_ori, op='ADD'):
+    """
+    Computes watershed based superpixels starting from the "best" minimum of each cell.
+
+    The gradient is regularized using the distance function to the cells centers.
+
+    Input:
+    imin (image UINT8) : original image, to be segmented into superpixels
+    step (UINT8) : grid step, i.e. distance between superpixels starting points
+    d_weight (UINT8): constant to be multiplied with function distance before addition to gradient image.
+        If d_weight <= 0, then only the gradient is taken into account.
+    hexa (BOOLEAN) : do we use an hexagonal grid?
+    filter_grad (BOOLEAN) : do we filter the gradient image ?
+    filter_ori (BOOLEAN) : de we filter the input image ?
+
+    Output:
+    image (UINT32) : labelled superpixels
+    image (UINT8) : distance weighted gradient function
+    image (UINT32) : minima used in the computation
+    """
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    # Connexity:
+    basicse, gridse1 = get_se_from_connex(hexa)
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    # Ori filtering
+    if filter_ori is True:
+        if 1:
+            _start = time()
+            imin_filt = mm.getSame(imin)
+            my_area_filtering(imin, step*step/16, hexa,  imin_filt)
+            mm.ImCopy(imin_filt, imin)
+            _end = time()
+           #print("Ori filtering time: %s" % (1000*(_end-_start)))
+        
+        if 0:
+            mm.pngFileWrite(imin,  "water_tmp.png")
+            #pdb.set_trace()
+            #image = cv2.imread('water_tmp.png')
+            image = cv2.imread('water_tmp.png',  cv2.CV_LOAD_IMAGE_UNCHANGED)
+            im8 = np.array(image, dtype=np.uint8)
+            dst = cv2.bilateralFilter(im8,  10, 10, 10)
+            cv2.imwrite("new_water_tmp.png",  dst)
+            imin = mm.fileRead("new_water_tmp.png")
+    else:
+        imin_filt = imin
+
+    # Gradient computation
+    _start = time()
+    im_grad = my_gradient(imin, basicse,  False)
+    _end = time()
+    #print(" Gradient time: %s" % (1000*(_end-_start)))
+    
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+    # Compute cell centers and cells
+    _start = time()
+    size = imin.getSize()
+    if hexa==False:
+        im_markers, im_cells = im_labelled_square_grid_points(size, step, step/6) 
+    else:
+        im_markers, im_cells = im_labelled_grid_points(size, step,  True,  step/6)
+    _end = time()
+    #print("Cells time: %s" % (1000*(_end-_start)))
+
+
+    # Distance function
+    _start = time()
+    immask = mm.getSame(im_markers)
+    mm.ImCompare(im_markers, ">", 0, 0, 1, immask)
+    imdist = mm.getSame(immask)
+    mm.Distance(immask, gridse1, imdist)
+    _end = time()
+    #print("Distance time: %s" % (1000*(_end-_start)))
+    #mm.ImDisplay(imdist, "imdist_m2")
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    im_grad32_noreg = mm.ImCreateSame(im_grad, GRAD_TYPE)
+    ss.ImCopy(im_grad, im_grad32_noreg)
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+
+    # Minima computation and evaluation
+    ## Minima of the gradient:
+    _start = time()
+    im_minima_val = mm.ImCreateSame(im_grad, LABEL_TYPE)
+    im_minima32 = mm.getSame(im_minima_val)
+    mm.ImMinima(im_grad32_noreg, basicse, im_minima32)
+    _end = time()
+    print("Minima computation: %s" % (1000*(_end-_start)))
+    #mm.ImDisplay(im_minima32, 'min1')
+    #pdb.set_trace()
+
+    ## Impose a minimum distance between minima by splitting minima along the grid :
+    _start = time()
+    im_minima_tmp = mm.getSame(im_minima32)
+    mm.ImCompare(im_cells, ">", 0, im_minima32, 0, im_minima_tmp)
+    ss.ImLabel(im_minima_tmp, basicse, im_minima32)
+
+    ## Evaluation of the importance of "split" minima : volumic extinction
+    mm.ImLabelMarkersWithExtinctionValues_Area( im_grad32_noreg, im_minima32, basicse, im_minima_val)
+    
+    ## NEW : Cope problem of minima disapearances (due to labelization with volumic extinction) : take back minima which have disapeared (with value set to 1)
+    imwo1 = mm.getSame(im_minima32)
+    mm.ImCompare( im_minima32,  ">",  0,  2,  0,  imwo1 )
+    mm.ImCompare( im_minima_val,  ">",  0, im_minima_val, imwo1, im_minima_val  )
+
+    ## cell minima are added to cope with the potential absence of minima in some cells:
+    imtmp1 = mm.getSame(im_cells)
+    imtmp2= mm.getSame(im_cells)
+    ## minima calculés sur chaque cellule indep.
+    mm.ImLabelWithMin(im_cells, im_grad32_noreg, basicse, imtmp2)
+    mm.ImCompare( im_grad32_noreg, "==", imtmp2, 1, 0, imtmp2)
+    ## ajout de ces marqueurs seulement si cellule sans minimum
+    mm.ImLabelWithMax(im_cells, im_minima_val, basicse, imtmp1)
+    mm.ImCompare(imtmp1, "==", 0, imtmp2, im_minima_val, im_minima_val)
+    _end = time()
+    #print("Minima evaluation time: %s" % (1000*(_end-_start)))
+
+    # Select minima
+    _start = time()
+    one_min_per_grid_cell_v2(im_cells, im_minima_val, basicse)
+    _end = time()
+    print("Minima selection time: %s" % (1000*(_end-_start)))
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+    # Distance function
+    _start = time()
+    immask = mm.getSame(im_markers)
+    mm.ImCompare(im_minima_val, ">", 0, 0, 1, immask)
+    imdist = mm.getSame(immask)
+    mm.Distance(immask, gridse1, imdist)
+    _end = time()
+    print("Distance time: %s" % (1000*(_end-_start)))
+    #mm.ImDisplay(imdist, "imdist_m1")
+
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+   # Regularize gradient with distance
+    im_grad32 = mm.ImCreateSame(im_grad, GRAD_TYPE)
+    ss.ImCopy(im_grad, im_grad32)
+
+    _start = time()
+    if d_weight > 0:
+        if hexa is True:
+            r3 = float(np.sqrt(3))
+            weight =  d_weight * r3/step
+        else:
+            weight =  d_weight * float(2)/step
+        if (op=='ADD'):
+            imdist2 = mult_image_with_float(imdist, weight)
+            im_grad32 = mm.ImCreateSame(imdist2, GRAD_TYPE)
+            ss.ImCopy(im_grad, im_grad32)
+            imtmp = mm.ImCreateSame(imdist2, GRAD_TYPE)
+            ss.ImCopy(imdist2, imtmp)
+            mm.arithAddImage(imtmp, im_grad32, im_grad32)
+        else:
+            raise ValueError("Variable op should be equal to ADD, for now")
+        ss.ImCopy(im_grad32, im_grad)
+    _end = time()
+    #print("Gradient regularization time: %s" % (1000*(_end-_start)))
+
+#-----------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
+
+    # Segmentation from minima on final gradient
+    _start = time()
+    imout = mm.getSame(im_minima_val)
+    im_tmp = mm.getSame(im_minima_val)
+    ss.ImLabel(im_minima_val, basicse, im_tmp)
+    ss.ImBasins(im_grad32, im_tmp, basicse, imout)
+    _end = time()
+    #print("Segm time: %s" % (1000*(_end-_start)))
+    #print("Number of final seeds: %s\n\n"%(mm.measMinMax(im_tmp)[1]))
+
+
+    return (imout, im_grad32, im_minima_val)
+
+
+
+############################################
+############################################
+############################################
+if __name__ == "__main__":
+    print "test int"

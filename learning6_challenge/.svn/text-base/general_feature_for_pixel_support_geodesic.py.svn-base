@@ -1,0 +1,58 @@
+# -*- coding: cp1252 -*-
+"""
+Description:
+
+Author: MoSeS-learning project: Vaïa Machairas, Etienne Decencière, Thomas Walter.
+Creation date: 2015-09-07
+"""
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+import pdb
+import numpy as np
+import smilPython as sp
+import useful_functions as uf
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+class GeneralFeatureGeodesicPixel(object):
+    def __init__(self, operator_functor,  channels_list,  window_params):
+        """
+        - window_params: dictionnary with key "size"
+        """
+        self._operator_functor = operator_functor
+        self._channels_list = channels_list
+        self._window_params = window_params
+    
+    def __call__(self,  original_image):
+        #pdb.set_trace()
+        X_feature_t = np.array([])
+        if original_image.getTypeAsString()=="RGB":
+            image_slices = sp.Image()
+            sp.splitChannels(original_image, image_slices)
+            sim_orig_slice= sp.Image(image_slices.getSlice(0))
+            for channel in self._channels_list:
+                array_vals = np.zeros([original_image.getSize()[0], original_image.getSize()[1]])
+                for i in range(original_image.getSize()[0]):
+                    for j in range(original_image.getSize()[1]):
+                        sp.crop(image_slices.getSlice(channel),  max(i-self._window_params["size"], 0),  max(j-self._window_params["size"],  0),  min(2*self._window_params["size"]+1, self._window_params["size"]+original_image.getSize()[0]  -i ),  min(2*self._window_params["size"]+1,  self._window_params["size"]+original_image.getSize()[1] -j ),  sim_orig_slice)
+                        array_vals[i, j] = self._operator_functor(sim_orig_slice)
+                X_feature_t = uf.my_concatenation(X_feature_t, np.ravel(array_vals)) 
+        elif original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+            sim_orig_slice= sp.Image(original_image)
+            array_vals = np.zeros([original_image.getSize()[0], original_image.getSize()[1]])
+            for i in range(original_image.getSize()[0]):
+                print i
+                for j in range(original_image.getSize()[1]):
+                    #print j
+                    sp.crop(original_image,   max(i-self._window_params["size"], 0),  max(j-self._window_params["size"],  0),  2*self._window_params["size"]+1,  2*self._window_params["size"]+1,  sim_orig_slice)
+                    array_vals[i, j] = self._operator_functor(sim_orig_slice)
+            X_feature_t = uf.my_concatenation(X_feature_t, np.ravel(array_vals)) 
+            #pdb.set_trace()
+        return X_feature_t
+
+    def get_name(self):
+        list_names = []
+        for i in self._channels_list:
+            list_names +=[self._operator_functor.get_name()+"_window_size_"+str(self._window_params["size"])+"_for_channel_" + str(i)]
+        return list_names

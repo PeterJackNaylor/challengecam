@@ -1,0 +1,214 @@
+# -*- coding: cp1252 -*-
+"""
+Description: script for pixel or superpixel classification.
+Author: MoSeS-learning project: Vaïa Machairas, Etienne Decencière, Thomas Walter.
+Creation date: 2015-11-05
+"""
+import pdb
+import os
+
+from getpass import getuser
+import smilPython as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+import folder_functions as ff
+import segmentation_by_classification as sc
+from evaluation import my_metrics
+##---------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------
+if getuser() == "vaiamachairas":
+    from vaia_parameters import *
+
+if getuser() == "decencie":
+    from etienne_parameters import *
+##---------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------
+#if os.path.isdir(output_dir) is not True:
+#    try:
+#        os.mkdir(output_dir)
+#    except OSError:
+#        print "Could not make output data base dir"
+#        raise
+#
+#print "-------- Processing %s ---------------" % output_dir
+#if len(os.listdir(output_dir)) != 0:
+#    print "WARNING! Output directory is not empty!!!!!!!!!!!!!!!!!!!!!!"
+
+##---------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------
+# on a besoin du chemin d'accès de la base: base_path
+base = "my_test"
+base_path = "/home/vaiamachairas/Documents/databases/essaisbase/"
+
+base = "my_test2"
+base_path = "/home/vaiamachairas/Documents/databases/essaisbase_noLOO/"
+
+#base = "my_test3"
+#base_path = "/home/vaiamachairas/Documents/databases/essaisbase_whd/"
+
+base = "my_verif"
+base_path = "/home/vaiamachairas/Documents/databases/base_verification/"
+
+#base = "LOreal2"
+#base_path = "/home/vaiamachairas/Documents/databases/LOreal2/"
+
+#base = "Coelho"
+#base_path = "/home/vaiamachairas/Documents/databases/Coelho/"
+
+#base = "CAMELYON_1"
+#base_path = "/home/vaiamachairas/Documents/challengeCAMELYON16/my_small_base/"
+##---------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------
+Nb_cc_list_train = []
+dic_gen_train = {'tp_pre':0, 'fp_pre':0,   'tp_rec':0,  'fp_rec':0,  'acc':0,  'im_size':0, 'inter':0,  'union':0}
+Nb_cc_list_test = []
+dic_gen_test = {'tp_pre':0, 'fp_pre':0,  'tp_rec':0,  'fp_rec':0,  'acc':0,  'im_size':0, 'inter':0,  'union':0}
+
+
+dico_of_path = ff.create_all_subsets_folders(base_path)
+
+for elem in dico_of_path:
+##--------------------------------------------------------------------------------------------------------------------------------------- 
+    if elem == "noLOO":
+        sub_path = base_path
+    else:
+        if len(dico_of_path)==1:
+            sub_path = os.path.join(base_path,  elem)
+            print elem
+        else:
+            sub_path = os.path.join(base_path, "LOO", elem)
+    print elem
+##---------------------------------------------------------------------------------------------------------------------------------------    
+    if base == "my_test":
+        db_server = sdba.SegmLOreal(sub_path)
+    if base == "my_test2":
+        db_server = sdba.SegmLOreal(sub_path)
+    if base == "my_test3":
+        db_server = sdba.SegmDataBaseWeizmannHorseSingleScale(sub_path)
+    if base == "my_verif":
+        db_server = sdba.SegmDataBaseStandard(sub_path)
+    if base == "LOreal2":
+        db_server = sdba.SegmLOreal(sub_path)
+    if base == "Coelho":
+        db_server = sdba.Coelho(sub_path)
+    if base == "CAMELYON_1":
+        db_server = sdba.SegmChallengeCamelyon16(sub_path)
+    output_dir = os.path.join(sub_path, "resultats")
+    #pdb.set_trace()
+##---------------------------------------------------------------------------------------------------------------------------------------        
+    if pixel_classif is True:
+        print "Pixel classification"
+        print pixel_features_list
+        classif = sc.PixelClassification(db_server, output_dir, pixel_features_list, nb_samples=NB_SAMPLES)
+        classif.set_classifier(myforest)
+        classif.fit()
+    if spp_classif is True:
+        print "Superpixel classification"
+        print superpixel_features_list
+        classif = sc.SuperpixelClassification(db_server, output_dir, wp_uc_sup, superpixel_features_list)
+        classif.set_classifier(myforest)
+        classif.fit()
+##---------------------------------------------------------------------------------------------------------------------------------------
+    ## features importance:
+    feature_importances = classif.classifier.feature_importances_
+    list_feat = classif.get_features_names_list()
+    list_feature_importances = [elem for elem in feature_importances]
+    dic_feat = {}
+    for i in range(len(list_feature_importances)):
+        dic_feat[list_feat[i]] = list_feature_importances[i]
+    new_dic = sorted(dic_feat.items(),  key = uf.my_func_to_sort_dico)
+    #print new_dic[len(new_dic)-1]
+#    ## From scikit learn:
+#    importances = myforest.feature_importances_
+#    std = np.std([tree.feature_importances_ for tree in myforest.estimators_], axis=0)
+#    indices = np.argsort(importances)[::-1]
+#    ### Print the feature ranking
+#    print("Feature ranking:")
+#    for f in range(len(dic_feat)):
+#        print("%d. feature %s (%f)" % (f + 1, list_feat[indices[f]], importances[indices[f]]))
+#    ### Plot the feature importances of the forest
+#    plt.figure()
+#    plt.title("Feature importances")
+#    plt.bar(range(len(dic_feat)), importances[indices],
+#           color="r", yerr=std[indices], align="center")
+#    plt.xticks(range(len(dic_feat)), indices)
+#    plt.xlim([-1, len(dic_feat)])
+#    #plt.show()    
+
+##--------------------------------------------------------------------------------------------------------------------------------------- 
+    ## Prediction:
+    if PREDICTION:
+        for im_train, seg_list, name,  name_orig in db_server.train():
+            im_uc_lab = classif.transform_image_uc(im_train)
+            #pdb.set_trace()
+            Y = classif.predict(im_train,  name_orig)  # pourquoi est-ce aussi long?
+            print "Y_train_",  Y
+            im_train_out = classif.visu_prediction_on_uc_image(im_uc_lab, Y)
+            sp.compare(im_train_out, ">", 0, 255, 0, im_train_out)
+            #sp.compare(seg_list[0], ">", 0, 255, 0, seg_list[0])
+            ### pour la base chevaux:
+            #new_name = 'mask-'+name.split('-')[1:][0]
+            #sp.write(im_train_out, output_dir+"/"+name)
+            sp.write(im_train_out, os.path.join(db_server._res_dir['train'],name))
+            
+        for im_test, seg_list, name,  name_orig in db_server.test():
+            im_uc_lab = classif.transform_image_uc(im_test)
+            Y = classif.predict(im_test,  name_orig)  # pourquoi est-ce aussi long?
+            print "Y_test_",  Y
+            im_test_out = classif.visu_prediction_on_uc_image(im_uc_lab, Y)
+            sp.compare(im_test_out, ">", 0, 255, 0, im_test_out)
+            #sp.compare(seg_list[0], ">", 0, 255, 0, seg_list[0])
+            sp.write(im_test_out, os.path.join(db_server._res_dir['test'],name))    
+##--------------------------------------------------------------------------------------------------------------------------------------- 
+    ## Evaluation:
+    if EVALUATION: 
+        meas=my_metrics(db_server)
+        ## Train:
+        average_nb_components_train = meas.number_of_connected_components('train')
+        Nb_cc_list_train += [average_nb_components_train]
+        meas.visualization_TFPN('train')
+        dic_train = meas.computation_TFPN('train')
+
+        for elem in dic_gen_train.keys():
+            dic_gen_train[elem] += dic_train[elem]
+        ## Test:
+        average_nb_components_test = meas.number_of_connected_components('test')
+        Nb_cc_list_test += [average_nb_components_test]
+        meas.visualization_TFPN('test')
+        dic_test = meas.computation_TFPN('test')
+        for elem in dic_gen_test.keys():
+            dic_gen_test[elem] += dic_test[elem]
+
+##---------------------------------------------------------------------------------------------------------------------------------------
+if EVALUATION:
+    accuracy_train = dic_gen_train['acc'] / float(dic_gen_train['im_size'])
+    precision_train = dic_gen_train['tp_pre'] / float(dic_gen_train['tp_pre'] + dic_gen_train['fp_pre'])
+    recall_train = dic_gen_train['tp_rec'] / float(dic_gen_train['tp_rec'] + dic_gen_train['fp_rec'])
+    f_score_train = 2 * precision_train * recall_train / float(precision_train + recall_train)
+    jaccard_train = dic_gen_train['inter'] / float(dic_gen_train['union'])
+    accuracy_train = dic_gen_train['acc'] / float(dic_gen_train['im_size'])
+    
+    accuracy_test = dic_gen_test['acc']/float(dic_gen_test['im_size'])
+    precision_test = dic_gen_test['tp_pre'] / float(dic_gen_test['tp_pre'] + dic_gen_test['fp_pre'])
+    recall_test = dic_gen_test['tp_rec'] / float(dic_gen_test['tp_rec'] + dic_gen_test['fp_rec'])
+    f_score_test = 2 * precision_test * recall_test / float(precision_test + recall_test) 
+    jaccard_test = dic_gen_test['inter'] / float(dic_gen_test['union'])
+    accuracy_test = dic_gen_test['acc'] / float(dic_gen_test['im_size'])
+##--------------------------------------------------------------------------------------------------------------------------------------- 
+print " "
+print "Precision_train: ", int(round(precision_train, 2)*100)
+print "Recall_train: ",  int(round(recall_train, 2)*100)
+print "F_score_train: ",  int(round(f_score_train, 2)*100)
+print "Jaccard_train: ", round(jaccard_train, 4)*100
+print "Accuracy_train: ",  int(round(accuracy_train, 2)*100)
+print "Nb_cc_list_train: ",  int(round(np.mean(Nb_cc_list_train))),  " ",  int(round(np.std(Nb_cc_list_train)))
+
+print " "
+print "Precision_test: ", int(round(precision_test, 2)*100)
+print "Recall_test: ",  int(round(recall_test, 2)*100)
+print "F_score_test: ",  int(round(f_score_test, 2)*100)
+print "Jaccard_test: ",  round(jaccard_test, 4)*100
+print "Accuracy_test: ",  int(round(accuracy_test, 2)*100)
+print "Nb_cc_list_test: ",  int(round(np.mean(Nb_cc_list_test))),  " ",  int(round(np.std(Nb_cc_list_test)))
+

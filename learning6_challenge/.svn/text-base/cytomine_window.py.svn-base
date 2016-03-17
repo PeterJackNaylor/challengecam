@@ -1,0 +1,211 @@
+# -*- coding: cp1252 -*-
+"""
+Description:
+This file contains 
+Author: MoSeS-learning project: Vaïa Machairas, Etienne Decencière, Thomas Walter.
+Creation date: 2016-01-26
+"""
+import pdb
+import numpy as np
+import smilPython as sp
+import useful_functions as uf
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class OperatorFunctorBase(object):
+    """
+    General class for operators.
+    """
+    def __init__(self, params):
+        """
+        Args:
+           params: dictionary giving the parameters.
+        """
+        self._params = params
+
+    def get_name(self):
+        return self.__class__.__name__
+
+    def __call__(self, imIn ):
+        """Apply the operator on imIn.
+
+        Args:
+           imIn: original input image.
+           imOut: image transformed.
+
+        """
+        pass
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class FromImageToMatrix_Window(OperatorFunctorBase):
+    def __init__(self, params):
+        """
+        Args:
+           params: dictionrary containing the key "window_size" and "substitution_value".
+        """
+        OperatorFunctorBase.__init__(self, params)
+
+    def get_name(self):
+        return "window_"+str(self._params['window_size']) 
+
+    def __call__(self, imIn):
+        enlarged_image =  uf.image_enlargement(imIn,  self._params["window_size"],  self._params["substitution_value"])
+        matrixOut = uf.translation_3D_matrix(enlarged_image,  self._params["window_size"])
+        return matrixOut
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class CytomineWindow(object):
+    """
+    This class enables to calculate the feature "cytomine"" with window support.
+    """
+    def __init__(self,  matrix_functor,  channels_list):
+        """
+        Constructeur de la classe.
+        """
+        self._channels_list = channels_list
+        self._matrix_functor = matrix_functor
+        
+    def __call__(self,  original_image):
+        """
+        Input:
+        - original_image
+        
+        Output:
+        - X_feature_t: matrix (numpy) of size KxSxC where K is the number of pixels in the window and S is the number of pixels in the image (and C the number of channels).
+        """
+#        matrixOut = self._matrix_functor(original_image)
+#        X_feature_t=None
+#        for d in range(matrixOut.shape[2]):
+#            x = np.ravel(matrixOut[:, :, d])
+#            X_feature_t = uf.my_concatenation(X_feature_t, x)
+#        #pdb.set_trace()
+#        #return X_feature_t[0, :]
+#        print X_feature_t.shape
+#        return X_feature_t
+        #pdb.set_trace()
+        X_feature_t=None
+        if original_image.getTypeAsString()=="RGB":
+            if self._channels_list == None:
+                self._channels_list = [0,1,2]
+            image_slices = sp.Image()
+            sp.splitChannels(original_image, image_slices)
+            for i in self._channels_list:
+                matrixOut = self._matrix_functor(image_slices.getSlice(i))
+                for d in range(matrixOut.shape[2]):
+                    x = np.ravel(matrixOut[:, :, d])
+                    X_feature_t = uf.my_concatenation(X_feature_t, x)                
+        elif original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+            self._channels_list = [0]
+            matrixOut = self._matrix_functor(original_image)
+            for d in range(matrixOut.shape[2]):
+                x = np.ravel(matrixOut[:, :, d])
+                X_feature_t = uf.my_concatenation(X_feature_t, x)
+        else:
+            raise TypeError('pb')
+        return X_feature_t
+
+    def get_name(self):
+        size = np.power(2 * self._matrix_functor._params['window_size'] +1,  2)
+        list_names=[]
+        for channel in self._channels_list:
+            for i in range(size):
+                list_names += ["cytomine_"+self._matrix_functor.get_name()+"_num_"+str(i+1)+"_over_"+str(size)+"_channel_"+str(channel)]
+        return list_names
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class CytomineSuperpixelLab(object):
+    """
+    This class enables to calculate the feature "cytomine"" with superpixel support (i.e. image of labelled superpixels).
+    """
+    def __init__(self,  matrix_functor,  spp_method,  channels_list):
+        """
+        Constructeur de la classe.
+        """
+        self._channels_list = channels_list
+        self._spp_method = spp_method
+        self._matrix_functor = matrix_functor
+    
+    def __call__(self,  original_image):
+        """
+        Input:
+        - original_image
+        
+        Output:
+        - X_feature_t: matrix (numpy) of size KxS where K is the number of pixels in the window and S is the number of pixels in the image.
+        """
+        image_sp = self._spp_method(original_image)
+        matrixOut = self._matrix_functor(image_sp)
+        X_feature_t=None
+        for d in range(matrixOut.shape[2]):
+            x = np.ravel(matrixOut[:, :, d])
+            X_feature_t = uf.my_concatenation(X_feature_t, x)
+        return X_feature_t
+
+    def get_name(self):
+        size = np.power(2 * self._matrix_functor._params['window_size'] +1,  2)
+        list_names=[]
+        for i in range(size):
+            list_names += ["cytomine_superpixel_"+self._spp_method.get_name()+"_windowType_"+self._matrix_functor.get_name()+"_num_"+str(i+1)+"_over_"+str(size)]
+        return list_names   
+
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class CytomineSuperpixelBin(object):
+    """
+    This class enables to calculate the feature "cytomine"" with superpixel support (i.e. image of labelled superpixels).
+    """
+    def __init__(self,  matrix_functor,  spp_method,  channels_list):
+        """
+        Constructeur de la classe.
+        """
+        self._channels_list = channels_list
+        self._spp_method = spp_method
+        self._matrix_functor = matrix_functor
+    
+    def __call__(self,  original_image):
+        """
+        Input:
+        - original_image
+        
+        Output:
+        - X_feature_t: matrix (numpy) of size KxS where K is the number of pixels in the window and S is the number of pixels in the image.
+        """
+        image_sp = self._spp_method(original_image)
+        matrixOut = self._matrix_functor(image_sp)
+        X_feature_t=None
+        for d in range(matrixOut.shape[2]):
+            x = np.ravel(matrixOut[:, :, d])
+            X_feature_t = uf.my_concatenation(X_feature_t, x)
+        if matrixOut.shape[2]==1:
+            the_size = 0
+        else:
+            the_size = matrixOut.shape[2]/2+1
+        print the_size
+        if len(X_feature_t.shape)==1:
+            tmp = X_feature_t
+            for j in range(len(X_feature_t)):
+                if X_feature_t[j] == tmp[j]:
+                    X_feature_t[j] = 1
+                else:
+                    X_feature_t[j] = 0
+        else:
+            tmp = X_feature_t[the_size, :]
+            for i in range(X_feature_t.shape[0]):
+                for j in range(X_feature_t.shape[1]):
+                    if X_feature_t[i, j]==tmp[j]:
+                        X_feature_t[i, j] = 1
+                    else:
+                        X_feature_t[i, j] = 0
+        #pdb.set_trace()
+        return X_feature_t
+
+    def get_name(self):
+        size = np.power(2 * self._matrix_functor._params['window_size'] +1,  2)
+        list_names=[]
+        for i in range(size):
+            list_names += ["cytomine_superpixel_"+self._spp_method.get_name()+"_windowType_"+self._matrix_functor.get_name()+"_num_"+str(i+1)+"_over_"+str(size)]
+        return list_names   
+
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
