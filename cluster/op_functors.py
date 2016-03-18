@@ -151,6 +151,26 @@ class TopHatFunctor(OperatorFunctorBase):
         return 
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+class TopHatInvFunctor(OperatorFunctorBase):
+    def __init__(self, params):
+        """
+        Args:
+           params: dictionrary containing the keys "neighborhood" and "size" for structuring element.
+        """
+        OperatorFunctorBase.__init__(self, params)
+        self._se = uf.set_structuring_element(self._params["neighborhood"], self._params["size"])
+
+    def get_name(self):
+        return "top_hat_inv_%s_size_%i" % (self._params["neighborhood"], self._params["size"])
+
+    def __call__(self, imIn,  imOut):
+        imIn2 = sp.Image(imIn)
+        sp.copy(imIn, imIn2)
+        sp.inv(imIn2,  imIn2)
+        sp.topHat(imIn2,  imOut,  self._se)
+        return 
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class MorphologicalGradientFunctor(OperatorFunctorBase):
     def __init__(self, params):
         """
