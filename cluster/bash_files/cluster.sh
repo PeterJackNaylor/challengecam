@@ -2,9 +2,9 @@
 
 #$ -cwd # execute the job from the current directory
 #$ -S /bin/bash #set bash environment
-#$ -N Peter_test # name of the job as it will appear in qstat -f
+#$ -N Normal # name of the job as it will appear in qstat -f
 #$ -o logs
-#$ -l mem_free=16G 
+#$ -l h_vmem=4G
 #$ -M peter.naylor@mines-paristech.fr # set email adress to notify once a job changes states as specified by -m
 #$ -m ae # a- send mail when job is aborted by batch system ; b- send mail when begins execution; e- send mail when job ends; n- do not send mail
 
@@ -29,4 +29,4 @@ source $HOME/.bash_profile
 #FIELD5=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f6)
 #FIELD6=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f7)
 
-python /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/Data_set.py /share/data40T/pnaylor/Cam16 Normal $SGE_TASK_ID 0 version_0
+python /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/Data_set.py /share/data40T/pnaylor/Cam16 Normal $SGE_TASK_ID 900000 version_0
