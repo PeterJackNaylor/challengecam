@@ -82,9 +82,9 @@ geo.GeneralFeatureGeodesic(og.GeodesicClosingFunctor({'neighborhood':neighborhoo
 ## top hat
 geo.GeneralFeatureGeodesic(og.GeodesicTopHatFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
 ## top hat inv
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
 ## morpho gradient
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':1,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':2,  'integrator': integrator_saf}),  [0, 1, 2],  wp1,  'pixel'), 
@@ -138,9 +138,9 @@ geo.GeneralFeatureGeodesic(og.GeodesicClosingFunctor({'neighborhood':neighborhoo
 ## top hat
 geo.GeneralFeatureGeodesic(og.GeodesicTopHatFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
 ## top hat inv
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
 ## morpho gradient
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':1,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':2,  'integrator': integrator_saf}),  [0, 1, 2],  wp2,  'pixel'), 
@@ -194,9 +194,9 @@ geo.GeneralFeatureGeodesic(og.GeodesicClosingFunctor({'neighborhood':neighborhoo
 ## top hat
 geo.GeneralFeatureGeodesic(og.GeodesicTopHatFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
 ## top hat inv
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
 ## morpho gradient
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':1,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':2,  'integrator': integrator_saf}),  [0, 1, 2],  wp3,  'pixel'), 
@@ -228,9 +228,9 @@ geo.GeneralFeatureGeodesic(og.GeodesicClosingFunctor({'neighborhood':neighborhoo
 ## top hat
 geo.GeneralFeatureGeodesic(og.GeodesicTopHatFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
 ## top hat inv
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
-#geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
+geo.GeneralFeatureGeodesic(og.GeodesicTopHatInvFunctor({'neighborhood':neighborhood_se, 'size':10,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
 ## morpho gradient
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':1,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
 geo.GeneralFeatureGeodesic(og.GeodesicMorphoGradientFunctor({'neighborhood':neighborhood_se, 'size':2,  'integrator': integrator_saf}),  [0, 1, 2],  wp4,  'pixel'), 
