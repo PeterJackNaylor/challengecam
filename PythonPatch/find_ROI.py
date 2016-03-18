@@ -520,6 +520,3 @@ def from_list_string_to_list_Tumor(lists, first_part):
         n = 3-len(el)
         res_bis.append(first_part+"_"+n*"0"+el)
     return res_bis
-
-
-

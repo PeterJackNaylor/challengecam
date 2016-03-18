@@ -26,7 +26,8 @@ FIELD1=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f2) # la partie gauche est pou
 FIELD2=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f3) # la partie droite est pour chopper la valeur qui est dans la colonne voulue 
 FIELD3=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f4) # sachant que le séparateur est l'espace
 FIELD4=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f5)
+FIELD5=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f6)
+FIELD5=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f7)
 
-python 
 
-python $CAM16/scripts/challengecam/cluster/machine_learning.py -s $CAM16 -k $FIELD1 -n $FIELD2 -ve $FIELD3 -t $FIELD4 -p $FIELD5
+python $CAM16/scripts/challengecam/cluster/machine_learning.py -s $CAM16 -k $FIELD1 -n $FIELD2 -ve $FIELD3 -t $FIELD4 -p $FIELD5 -b $FIELD6

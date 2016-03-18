@@ -59,6 +59,8 @@ if __name__ ==  "__main__":
 					  help="Number of trees for the random Forest",metavar="int")
 	parser.add_option("-p","--m_try",dest="m_try",
 					  help="Number of selected features at each tree",metavar="int")
+	parser.add_option("-b","--bootstrap",dest="n_bootstrap",
+					  help="Number of selected instances at each tree",metavar="int")
 
 	(options, args) = parser.parse_args()
 
@@ -122,7 +124,8 @@ if __name__ ==  "__main__":
 		Y_train[ i * options.n_samples : (i+1) * options.n_samples ] = Y_temp
 
 
-	myforest = RandomForestClassifier(n_estimators = options.n_tree, max_features = options.mtry, max_depth = None ) ## penser a changer bootstrap
+	myforest = PeterRandomForestClassifier(n_estimators = options.n_tree, max_features = options.mtry,
+										   max_depth = None, n_bootstrap = options.n_bootstrap ) ## penser a changer bootstrap
 
 	myforest.fit(X_train,Y_train)
 
