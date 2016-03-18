@@ -91,7 +91,7 @@ class Haralick(OperatorFunctorBase):
         if imIn.getSize()[0] == 1 or imIn.getSize()[1] == 1 :
             to_add = rd.randint(0, 100000)
 
-            imIn.save('temporary_save'+str(to_add)+'.png')
+            imIn.save('./temp/temporary_save'+str(to_add)+'.png')
             arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
         else:
 #            arr = np.transpose(imIn.getNumArray())
@@ -163,7 +163,7 @@ class LBP(OperatorFunctorBase):
             histogram = mh.features.lbp(arr,  self._radius,  self._points, ignore_zeros = self._ignore_zeros)
         except:
             to_add = rd.randint(0, 100000)
-            imIn.save('temporary_save'+str(to_add)+'.png')
+            imIn.save('./temp/temporary_save'+str(to_add)+'.png')
             arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
             histogram = mh.features.lbp(arr,  self._radius,  self._points,  ignore_zeros = self._ignore_zeros)
         return histogram
