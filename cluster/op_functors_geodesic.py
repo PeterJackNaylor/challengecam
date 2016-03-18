@@ -10,6 +10,8 @@ import smilPython as sp
 import useful_functions as uf
 import mahotas as mh
 import random as rd
+import scipy.ndimage
+
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class OperatorFunctorBase(object):
@@ -90,7 +92,6 @@ class Haralick(OperatorFunctorBase):
             to_add = rd.randint(0, 100000)
 
             imIn.save('temporary_save'+str(to_add)+'.png')
-            import scipy.ndimage
             arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
         else:
 #            arr = np.transpose(imIn.getNumArray())
@@ -163,7 +164,6 @@ class LBP(OperatorFunctorBase):
         except:
             to_add = rd.randint(0, 100000)
             imIn.save('temporary_save'+str(to_add)+'.png')
-            import scipy.ndimage
             arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
             histogram = mh.features.lbp(arr,  self._radius,  self._points,  ignore_zeros = self._ignore_zeros)
         return histogram
