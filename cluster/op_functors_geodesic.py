@@ -96,7 +96,7 @@ class Haralick(OperatorFunctorBase):
 #            arr = np.transpose(imIn.getNumArray())
 
             arr = imIn.getNumArray()
-        feats = mh.features.harallsick(arr, ignore_zeros=True, preserve_haralick_bug=False, compute_14th_feature=False, return_mean=False, return_mean_ptp=False, use_x_minus_y_variance=False)
+        feats = mh.features.haralick(arr, ignore_zeros=True, preserve_haralick_bug=False, compute_14th_feature=False, return_mean=False, return_mean_ptp=False, use_x_minus_y_variance=False)
         return feats
         
 class HaralickFeature(Haralick):
@@ -155,11 +155,17 @@ class LBP(OperatorFunctorBase):
         Output:
         histogram with 6 bins (1D-ndarray f size 6)
         """
-        to_add = rd.randint(0, 100000)
-        imIn.save('temporary_save'+str(to_add)+'.png')
-        import scipy.ndimage
-        arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
-        histogram = mh.features.lbp(arr,  self._radius,  self._points,  ignore_zeros = self._ignore_zeros)
+        
+        try:
+            arr = imIn.getNumArray()
+            arr = arr.T
+            histogram = mh.features.lbp(arr,  self._radius,  self._points, ignore_zeros = self._ignore_zeros)
+        except:
+            to_add = rd.randint(0, 100000)
+            imIn.save('temporary_save'+str(to_add)+'.png')
+            import scipy.ndimage
+            arr = scipy.ndimage.imread('temporary_save'+str(to_add)+'.png')
+            histogram = mh.features.lbp(arr,  self._radius,  self._points,  ignore_zeros = self._ignore_zeros)
         return histogram
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
