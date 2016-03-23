@@ -107,8 +107,8 @@ def Best_Finder_rec(slide,level,x_0,y_0,size_x,size_y,image_name,ref_level,list_
                     size_x +=extra_pixels/2
                     size_y +=extra_pixels/2
                     width_xp,height_xp=get_size(slide,extra_pixels/2,extra_pixels/2,level,0)
-                    x_0 -= width_xp
-                    y_0 -= height_xp
+                    x_0 = max(x_0 - width_xp,0)
+                    y_0 = max(y_0 - height_xp,0)
                 para=[x_0,y_0,size_x,size_y,level]
                 if White_score(slide,para,thresh)<0.5:
                     list_roi.append(para)
@@ -422,11 +422,12 @@ def visualise_cut(slide,list_pos,res_to_view=None,color='red',size=12,title=""):
     max_x,max_y=slide.level_dimensions[res_to_view]
     fig = plt.figure(figsize=(size,size ))
     ax = fig.add_subplot(111, aspect='equal')
-    ax.imshow(whole_slide,origin='lower')
+    ax.imshow(whole_slide)#,origin='lower')
     for para in list_pos:
         top_left_x,top_left_y=get_X_Y_from_0(slide,para[0],para[1],res_to_view)
         w,h=get_size(slide,para[2],para[3],para[4],res_to_view)
         p=patches.Rectangle((top_left_x,max_y-top_left_y-h), w, h, fill=False, edgecolor=color)
+        p=patches.Rectangle((top_left_x,top_left_y), w, h, fill=False, edgecolor=color)
         ax.add_patch(p)
     ax.set_title(title, size=20)
     plt.show()

@@ -139,7 +139,7 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
     """
     Base du challenge CAMELYON16 (ISBI16).
     """
-    def __init__(self,  dir_in, slide_to_do = None, type_method = 'train'):
+    def __init__(self,  dir_in, slide_to_do = None, type_method = 'train', dico_ROI = None):
         SegmDataBaseCommon.__init__(self, dir_in)
         if "Tumor" in slide_to_do:
             self._im_dir["train"] = os.path.join(dir_in,"Tumor")
@@ -155,6 +155,7 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
 #        self._res_dir["val"] = os.path.join(dir_in, "resultats/val")
         self.slide_to_do = slide_to_do
         self.type_method = type_method
+        self.dico_ROI = dico_ROI
     def train_training(self):
         return self.iter_training("train")
     
@@ -195,10 +196,12 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
                                  method = 'SP_ROI', mask_address = cm,
                                  N_squares = 16, verbose = False ) ### RAJOUTER ARGUMENT EN OPTION
         else:
-            
-            ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
-                                 black_spots = 20, number_of_pixels_max = 1000000,
-                                 method='grid_etienne',marge=0.1 )
+            if self.dico_ROI is None:
+                ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
+                                     black_spots = 20, number_of_pixels_max = 1000000,
+                                     method='grid_etienne',marge=0.1 )
+            else:
+                ROI_pos = [self.dico_ROI['para']]
         file_name =  os.path.basename(im_file)
         [base_name, ext] = file_name.rsplit(".", 1)
         list_of_imagettes=[]
@@ -239,10 +242,12 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
                                  method = 'SP_ROI', mask_address = cm,
                                  N_squares = 16, verbose = False ) ### RAJOUTER ARGUMENT EN OPTION
         else:
-
-            ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
-                                 black_spots = 20, number_of_pixels_max = 1000000,
-                                 method='grid_etienne',marge=0.1 )
+            if self.dico_ROI is None:
+                ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
+                                     black_spots = 20, number_of_pixels_max = 1000000,
+                                     method='grid_etienne',marge=0.1 )
+            else:
+                ROI_pos = [self.dico_ROI['para']]
         ct=0
         list_of_imagettes_and_corr_gt=[]
         for para in ROI_pos: ##### change for a better imagettes' selection method

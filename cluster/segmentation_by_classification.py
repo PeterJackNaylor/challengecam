@@ -67,7 +67,6 @@ class LearnSegmentation(object):
         - les vecteurs en une matrice dont la ligne correspond à un feature. (format .npy)
         - un dictionnaire qui à chaque nom de feature (string) associe le numéro de la ligne dans la matrice précédente. (format .pickle) 
         """
-        pdb.set_trace()
         orig_name = '.'.join(original_image_name.split('.')[:-1])
         ##
         if os.path.isdir(folder_sauv_path) is not True:
@@ -129,7 +128,9 @@ class LearnSegmentation(object):
                     else:
                         matrix_npy = uf.my_concatenation(matrix_npy,  x[j, :])
         #print "taille X",  X.shape
+        pdb.set_trace()
         if sauv_dico == True:
+            pdb.set_trace()
             print "save new dict"
             im_pickle = open(image_sauv_name_pickle,  'w')
             pickle.dump(dico_image,  im_pickle)

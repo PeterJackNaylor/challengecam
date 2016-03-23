@@ -21,7 +21,7 @@ CAM16=/share/data40T/pnaylor/Cam16
 spe_tag=__
 source $HOME/.bash_profile
 
-FILE=settings_for_machine_learning.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
+FILE=settings_for_pred_base.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
 FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
 FIELD2=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f3) # la partie droite est pour chopper la valeur qui est dans la colonne voulue 
 FIELD3=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) # sachant que le séparateur est l'espace
@@ -31,4 +31,4 @@ FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 FIELD7=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f8)
 
 
-python $CAM16/scripts/challengecam/cluster/machine_learning.py -s $CAM16 -k $FIELD1 -n $FIELD2 -ve $FIELD3 -t $FIELD4 -p $FIELD5 -b $FIELD6
+python $CAM16/scripts/challengecam/cluster/Pred_Data_set.py -s $CAM16 -t $FIELD1 -n $FIELD2 -x $FIELD3 -y $FIELD4 -w $FIELD5 --height $FIELD6 -r $FIELD7 -o $CAM16/Pred_data_set

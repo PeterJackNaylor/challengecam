@@ -61,7 +61,7 @@ if __name__ ==  "__main__":
 			os.mkdir(saving_location)
 	else:
 		print "No version named folder created"
-		raise 
+
 	db_server = sdba.SegmChallengeCamelyon16(input_1, slide_to_do= input_2)
 
 	classif = sc.PixelClassification(db_server, input_2, pixel_features_list, nb_samples=input_3)

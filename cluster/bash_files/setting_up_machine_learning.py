@@ -28,7 +28,7 @@ if __name__ ==  "__main__":
 		for p in p_s:
 			for t in number_of_trees:
 				for i in range(number_of_folds):
-					f.write(str(line) + "** "+str(i)+" "+str(n_samples)+" "+version+" "
+					f.write("__"+str(line) + "__ "+str(i)+" "+str(n_samples)+" "+version+" "
 						+ str(t) + " " +str(p) + " " + str(n_boot) +"\n")
 					line += 1
 	f.close()

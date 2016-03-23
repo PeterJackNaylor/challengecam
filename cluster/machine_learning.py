@@ -129,7 +129,7 @@ if __name__ ==  "__main__":
 
 	myforest.fit(X_train,Y_train)
 
-	for sample_name in Normal_slides_train+:
+	for sample_name in Normal_slides_train+Tumor_slides_test:
 
 		image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
 		image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
