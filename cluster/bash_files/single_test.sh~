@@ -19,7 +19,8 @@
 
 
 
-source $HOME/.bash_profile
+#source /.profile
+source /share/apps/user_apps/challengecam/cluster/bash_files/peter_profile
 
 #FILE=param_list.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
 #FIELD1=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
@@ -29,5 +30,4 @@ source $HOME/.bash_profile
 #FIELD5=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f6)
 #FIELD6=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f7)
 
-python /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/Data_set.py /share/data40T/pnaylor/Cam16 Normal $SGE_TASK_ID 100000 version_0
-
+python /share/apps/user_apps/challengecam/cluster/Data_set.py --input_folder /share/data40T/pnaylor/Cam16 --output_folder /share/data40T_v2/challencecam_results --type Normal --id $SGE_TASK_ID --nb_samples 1000 

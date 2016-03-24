@@ -276,6 +276,7 @@ def ROI(name,ref_level=4, disk_size=4, thresh=None, black_spots=None,
         folder=name.split(".")[0] 
     slide = openslide.open_slide(name)
     list_roi=[]
+    #pdb.set_trace()
 
     if method=='grid':
         lowest_res=len(slide.level_dimensions)-2

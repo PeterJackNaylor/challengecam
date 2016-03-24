@@ -1,0 +1,14 @@
+
+export LD_LIBRARY_PATH=~.local/lib:/share/apps/glib-2.37.93/lib:/share/apps/gcc-4.4.7/lib64:/share/apps/gcc-4.4.7/lib:/share/apps/gmp-4.3.2/lib:/share/apps/mpfr-2.4.2/lib:/cbio/donnees/nvaroquaux/.local/lib:$LD_LIBRARY_PATH
+
+export PATH=/share/apps/gcc-4.4.7/bin:/cbio/donnees/nvaroquaux/.local/bin:$PATH
+
+export ILOG_LICENSE_FILE=/cbio/donnees/nshervashidze/.local/proprietary/cplex/access.ilm
+
+export PYTHONPATH=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster:/share/data40T/pnaylor/Cam16/scripts/challengecam/PythonPatch:/share/apps/user_apps/smil_0.8.1/lib/Smil/
+
+
+alias thal="ssh thalassa"
+
+alias Cam16="cd /share/data40T/pnaylor/Cam16"
+alias CamBashFiles="cd /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/bash_files"
