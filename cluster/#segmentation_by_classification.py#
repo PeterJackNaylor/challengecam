@@ -5,10 +5,11 @@ Challenge CAMELYON16.
 This file contains the class PixelClassification 
 which is used to learn a segmentation model by pixel from a set of reference segmentations, and apply it to other images.
 
-Authors:  Va�a Machairas, Etienne Decenci�re, Peter Naylor, Thomas Walter.
+Authors:  Vaïa Machairas, Etienne Decencière, Peter Naylor, Thomas Walter.
 
 Creation date: 2016-02-24
 """
+import time
 import pdb
 import os
 import numpy as np
@@ -36,8 +37,8 @@ class LearnSegmentation(object):
            when they are pixels)
         """
         self._db_server = db_server
-        if os.path.isdir(output_folder) is False:
-            raise OSError("Could not find output directory. Stopping process.")
+       # if os.path.isdir(output_folder) is False:
+       #     raise OSError("Could  find output directory. Stopping process.")
         self._output_folder = output_folder
         self._features_list = features_list
         self._nb_samples = nb_samples
@@ -61,12 +62,12 @@ class LearnSegmentation(object):
         raise NotImplementedError("transfor_image_uc() should be implemented in derived classes")
 
 
-    def get_X_per_image_with_save_3(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path):
+    def get_X_per_image_with_save_3_original(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path):
         """
-        morceau de code en commun pour sauvegarder les features d�j� calcul�s et gagner du temps.
-        deuxi�me version: on sauve:
-        - les vecteurs en une matrice dont la ligne correspond � un feature. (format .npy)
-        - un dictionnaire qui � chaque nom de feature (string) associe le num�ro de la ligne dans la matrice pr�c�dente. (format .pickle) 
+        morceau de code en commun pour sauvegarder les features déjà calculés et gagner du temps.
+        deuxième version: on sauve:
+        - les vecteurs en une matrice dont la ligne correspond à un feature. (format .npy)
+        - un dictionnaire qui à chaque nom de feature (string) associe le numéro de la ligne dans la matrice précédente. (format .pickle) 
         """
         orig_name = '.'.join(original_image_name.split('.')[:-1])
         ##
@@ -129,14 +130,16 @@ class LearnSegmentation(object):
                     else:
                         matrix_npy = uf.my_concatenation(matrix_npy,  x[j, :])
         #print "taille X",  X.shape
+        pdb.set_trace()
         if sauv_dico == True:
+            pdb.set_trace()
             print "save new dict"
             im_pickle = open(image_sauv_name_pickle,  'w')
             pickle.dump(dico_image,  im_pickle)
             im_pickle.close()
             print "save new matrix"
             np.save(image_sauv_name_npy,  matrix_npy)
-        #####   � enlever ensuite: pour etude temporaire des features si image ndg
+        #####   à enlever ensuite: pour etude temporaire des features si image ndg
 ##        for i in range(X.shape[0]):
 ##            im_feature = sp.Image(original_image)
 ##            im_feature_arr = np.transpose(im_feature.getNumArray())
@@ -149,6 +152,105 @@ class LearnSegmentation(object):
 
         return X.transpose()
 
+    def get_X_per_image_with_save_3_ttt(self,  original_image, original_image_name, folder_sauv_path,  image_sauv_path):
+        """
+        morceau de code en commun pour sauvegarder les features dÃ©jÃ  calculÃ©s et gagner du temps.
+        deuxiÃ¨me version: on sauve:
+        - les vecteurs en une matrice dont la ligne correspond Ã  un feature. (format .npy)
+        - un dictionnaire qui Ã  chaque nom de feature (string) associe le numÃ©ro de la ligne dans la matrice prÃ©cÃ©dente. (format .pickle)
+        """
+        pdb.set_trace()
+        ## Pour trouver la taille de X:
+        nb_samples = original_image.getSize()[0] * original_image.getSize()[1]
+        lili = []
+        for feature in self._features_list:
+            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+                feature._channels_list = [0]
+            lili += feature.get_name()
+        nb_features = len(lili)
+        X = np.zeros((nb_features,  nb_samples))
+        index_lign_free = 0
+        matrix_npy = np.zeros((nb_features,  nb_samples))
+        index_lign_free_matrix_npy = 0
+        ##
+        dico_image = {}
+        for feature in self._features_list:
+            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+                feature._channels_list = [0]
+            list_feat_per_channel = feature.get_name()
+            x = feature.__call__(original_image)
+            ##
+            for i in feature._channels_list:
+                if len(feature._channels_list)==1:
+                    index_lign_free_X = uf.my_concatenation_2(X, x, index_lign_free_X)
+                else:
+                    index_lign_free_X = uf.my_concatenation_2(X, x[i, :], index_lign_free_X)
+            ##
+            save_length = len(dico_image)
+            for j in range(len(list_feat_per_channel)):
+                dico_image[list_feat_per_channel[j]] = save_length + j
+                if len(list_feat_per_channel)==1:
+                    index_lign_free_matrix_npy = uf.my_concatenation_2(matrix_npy, x, index_lign_free_matrix_npy)
+                else:
+                    index_lign_free_matrix_npy = uf.my_concatenation_2(matrix_npy, x[j, :], index_lign_free_matrix_npy)
+
+        return X.transpose(),dico_image
+
+    def get_X_per_image_with_save_3(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path):
+        """
+        morceau de code en commun pour sauvegarder les features déjà calculés et gagner du temps.
+        deuxième version: on sauve:
+        - les vecteurs en une matrice dont la ligne correspond à un feature. (format .npy)
+        - un dictionnaire qui à chaque nom de feature (string) associe le numéro de la ligne dans la matrice précédente. (format .pickle) 
+        """
+        orig_name = '.'.join(original_image_name.split('.')[:-1])
+        ## Pour trouver la taille de X:
+        nb_samples = original_image.getSize()[0] * original_image.getSize()[1]
+        lili = []
+        for feature in self._features_list:
+            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+                feature._channels_list = [0]
+            lili += feature.get_name()
+        nb_features = len(lili)
+        X = np.zeros((nb_features,  nb_samples))
+        #index_lign_free = 0
+        #matrix_npy = np.zeros((nb_features,  nb_samples))
+        #index_lign_free_matrix_npy = 0
+        index = 0
+
+	##
+        X = None
+        dico_image = {}
+        #matrix_npy = None
+        start_time = time.time()
+        for feature in self._features_list:
+            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+                feature._channels_list = [0]
+            list_feat_per_channel = feature.get_name()
+            #print feature.get_name()
+            sauv_dico = True
+            x = feature.__call__(original_image)
+            feat_time = time.time() - start_time
+            start_time = time.time()
+            #original_image.getSize() = (384,704,3) and x.shape=(811008,)  (==(384*703*3,))
+            #X = uf.my_concatenation(X, x)
+            pdb.set_trace()
+            X[index:(index+x.shape[0])] = x[:,:]
+            index += x.shape[0]
+            save_length = len(dico_image)
+            for j in range(len(list_feat_per_channel)):
+                dico_image[list_feat_per_channel[j]] = save_length + j
+            #    if len(list_feat_per_channel)==1:
+            #        matrix_npy = uf.my_concatenation(matrix_npy,  x)
+            #    else:
+            #        matrix_npy = uf.my_concatenation(matrix_npy,  x[j, :])
+            update_time = time.time() - start_time
+            start_time = time.time()
+            print '%s : calc = %i seconds\tupdate = %i seconds' % (feature.get_name(), int(feat_time), int(update_time))
+        #print "taille X",  X.shape
+
+        return X.transpose(),dico_image
+
 
     def get_Y_per_image(self, image_uc_lab, image_GT):
         """Compute the vector of labels of the image."""
@@ -158,7 +260,11 @@ class LearnSegmentation(object):
     def subsample(self, X, Y, code):
         labels = np.unique(Y)
         nb_labels = len(labels)
-        nb_samples_per_image_per_label = self._nb_samples / self._db_server.nb_im(code) / nb_labels
+        #nb_samples_per_image_per_label = self._nb_samples / self._db_server.nb_im(code) / nb_labels
+        # I modified this, because we need the number of samples to be determined before calling this function
+        # in particular it should not depend on the number of labels (this is to avoid np.concatenate).
+        # I am aware of the bias this generates. 
+        nb_samples_per_image_per_label = self._nb_samples
         X_sample = None
         for label in labels:
             mask_index = [i for i in np.arange(len(Y)) if Y[i]==label]
@@ -181,9 +287,9 @@ class LearnSegmentation(object):
 
     def deal_with_missing_values_2(self,  X):
         """
-        Meme id�e que deal_with_missing_values mais avec une autre strat�gie de remplacement des valeurs:
+        Meme idée que deal_with_missing_values mais avec une autre stratégie de remplacement des valeurs:
         lorsqu'il y a une valuer manquante dans la ligne i, on cherche quelles sont les cinque autres lignes (uc) 
-        qui sont les plus proches (au sens des moindres carr�s sur les autres features) puis on remplace la valeur manquante par leur moyenne.
+        qui sont les plus proches (au sens des moindres carrés sur les autres features) puis on remplace la valeur manquante par leur moyenne.
         """
         ##X=np.array([[1,2,3],[4,5,None], [7,8,9],  [4, 4, 4],[None,10,11]])## example for testing
         for i in range(X.shape[0]):
@@ -194,7 +300,7 @@ class LearnSegmentation(object):
                         dico[ii] = uf.SoS(X[i, :],  X[ii, :])
                 nb_of_neighbors = min(2,  len(dico))
                 new_dico = sorted(dico.items(),  key = uf.my_func_to_sort_dico) ## c'est une liste
-                ## maintenant faire la moyenne des valeurs sur les lignes d'indices trouv�s pour un feature donn� 
+                ## maintenant faire la moyenne des valeurs sur les lignes d'indices trouvés pour un feature donné 
                 list_indexes = [new_dico[0:nb_of_neighbors][k][0] for k in range(nb_of_neighbors)]
                 mat = None
                 for index in list_indexes:
@@ -205,7 +311,7 @@ class LearnSegmentation(object):
                         print "We had to replace the missing value by the mean of corresponding values in the five most similar samples."
         return X
 
-    def get_X_Y_for_train(self, code):
+    def get_X_Y_for_train(self, code, first=None, last=None, N_squares=16):
         """
         This method enables to compute the vector of labels
         of all classifcation units in all images of the training set.
@@ -216,16 +322,44 @@ class LearnSegmentation(object):
         """
         X_train = None
         Y_train = None
-        for original_image, image_GT,  original_image_name in self._db_server.iter_training(code):
-            X_image = self.get_X_per_image(original_image, original_image_name)
+
+        # get the number of samples
+        # we loop, as some images might not have the same size (border effects). 
+        N = 0
+        for original_image, image_GT,  original_image_name in self._db_server.iter_training(code, first, last, N_squares=N_squares):
+            print original_image_name
+            if not self._nb_samples is None:
+                N += self._nb_samples
+            else:
+                N += original_image.getWidth()*original_image.getHeight()
+        
+        # get the number of features
+        complete_feature_list = []
+        for feat in self._features_list: complete_feature_list.extend(feat.get_name())
+        P = len(complete_feature_list)
+
+        X_train = np.zeros((N, P))
+        Y_train = np.zeros((N, 1))        
+
+        i = 0
+    
+        for original_image, image_GT,  original_image_name in self._db_server.iter_training(code, first, last, N_squares=N_squares):
+            
+            X_image, dico= self.get_X_per_image(original_image, original_image_name)
             image_uc_lab = self.transform_image_uc(original_image)
             Y_image = self.get_Y_per_image(image_uc_lab, image_GT)
             print "Name: ", original_image_name
+            
             if self._nb_samples is not None:
                 X_image, Y_image = self.subsample(X_image, Y_image, code)
-            X_train = uf.my_concatenation(X_train,  X_image)
-            Y_train = uf.my_concatenation(Y_train,  Y_image)
-        return X_train, Y_train
+            
+            X_train[i:(i+X_image.shape[0]),:] = X_image[:,:]
+            Y_train[i:(i+Y_image.shape[0]),:] = Y_image[:,:]
+            i += X_image.shape[0]
+
+            #X_train = uf.my_concatenation(X_train,  X_image)
+            #Y_train = uf.my_concatenation(Y_train,  Y_image)
+        return X_train, Y_train, dico
 
     def get_features_names_list(self):
         """
@@ -290,6 +424,7 @@ class LearnSegmentation(object):
         labels = np.unique(Y)
         nb_labels = len(labels)
         nb_samples_per_image_per_label = self._nb_samples / self._db_server.nb_im(code) / nb_labels
+        pdb.set_trace()
         X_sample = None
         for label in labels:
             mask_index = [i for i in np.arange(len(Y)) if Y[i]==label]
@@ -346,7 +481,7 @@ class LearnSegmentation(object):
         debug_mess("Running fit")
         X_train, Y_train,  S_train = self.get_X_Y_S_for_cross_validation(code)
         X_train = self.deal_with_missing_values_2(X_train)
-        ## l� il faut ajouter la boucle
+        ## là il faut ajouter la boucle
         list_slides_names = list(np.unique(S_train))
         nber_of_slides = len(list_slides_names)
         nber_of_slides_per_fold = nber_of_slides / k
@@ -406,7 +541,7 @@ class PixelClassification(LearnSegmentation):
         size = original_image.getSize()
         new_array = np.arange(1, size[0]*size[1]+1, dtype=np.uint32).reshape(size[0], size[1])
         imtmp = sp.Image(size[0], size[1])
-        imout = sp.Image(imtmp, "UINT16")# pour le moment, normalement mettre uint32 ou faire �chantillonnage qd uc = pixels
+        imout = sp.Image(imtmp, "UINT16")# pour le moment, normalement mettre uint32 ou faire échantillonnage qd uc = pixels
         imArr = imout.getNumArray()
         for i in range(size[0]):
             for j in range(size[1]):
@@ -429,9 +564,9 @@ class PixelClassification(LearnSegmentation):
         """
         folder_sauv_path = os.path.join( self._db_server.get_input_dir() ,  "sauvegarde" )
         image_sauv_path = os.path.join(folder_sauv_path,  "uc_pixel")
-        X_image = self.get_X_per_image_with_save_3(original_image,  original_image_name,  folder_sauv_path,  image_sauv_path)
+        X_image, dico = self.get_X_per_image_with_save_3(original_image,  original_image_name,  folder_sauv_path,  image_sauv_path)
         
-        return X_image
+        return X_image, dico
 
 
     def get_Y_per_image(self, image_uc_lab, image_GT):

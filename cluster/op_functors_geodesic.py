@@ -341,25 +341,25 @@ def geodesicErosion(imIn, se_neigh, se_size):
     se = uf.set_structuring_element(se_neigh, 1)
     imOut = sp.Image(imIn)
     sp.copy(imIn,  imOut)
-    for i in range(se_size):
-        i +=1
-        imwrk = sp.Image(imOut)
-        sp.copy(imOut,  imwrk)
-        sp.test(imwrk, imOut,  sp.maxVal(imwrk),  imwrk)
+    imwrk = sp.Image(imOut)
+    maxval = sp.maxVal(imIn)
+    for _ in range(se_size):
+        sp.test(imOut, imOut,  maxval,  imwrk)
         sp.erode(imwrk,  imOut,  se)
         sp.test(imIn,  imOut, 0 ,  imOut )
     return imOut
+
     
 def geodesicDilation(imIn, se_neigh,  se_size):
     se = uf.set_structuring_element(se_neigh, 1)
     imOut = sp.Image(imIn)
     sp.copy(imIn,  imOut)
+    imwrk = sp.Image(imOut)
     for i in range(se_size):
-        i +=1    
-        imwrk = sp.Image(imOut)
         sp.dilate(imOut,  imwrk, se)
         sp.test(imIn,  imwrk, 0 ,  imOut ) 
     return imOut
+
 
 def geodesicOpening(imIn, se_neigh,  se_size):
     imwrk = geodesicErosion(imIn,  se_neigh,  se_size)
