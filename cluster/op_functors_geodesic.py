@@ -109,23 +109,22 @@ class HaralickFeature(Haralick):
         """
         Haralick.__init__(self,  params)
         self.erase = erase
-        self.feats = None
 
     def get_name(self):
         return self._feature_name+"_dir_"+str(self._direction_number)
             
     
-    def __call__(self,  imIn):
-        feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
-        #if self.erase:
-        #    self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
-        #else:
-        #    if feats is None: 
-        #        self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
-        #    else:
-        #        self.feats = feats
+    def __call__(self,  imIn, feats=None):
+        #feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+        if self.erase:
+            self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+        else:
+            if feats is None: 
+                self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+            else:
+                self.feats = feats
 
-        #feats = self.feats
+        feats = self.feats
         try:
             if self._direction_number == 'all':
                 val_out1 =round(feats[0,  self._dic_features[self._feature_name]], 5)

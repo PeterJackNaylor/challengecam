@@ -76,7 +76,7 @@ gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':3}),
 gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 geo.GeneralFeatureGeodesicList(
-							[og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}), 
+							[og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}, erase=True), 
 							 og.HaralickFeature({'direction': 'all',  'feature_name': 'Contrast'}), 
 							 og.HaralickFeature({'direction': 'all',  'feature_name': 'Correlation'}), 
 							 og.HaralickFeature({'direction': 'all',  'feature_name': 'SumofSquaresVariance'}), 

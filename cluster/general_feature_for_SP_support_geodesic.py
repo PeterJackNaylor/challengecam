@@ -239,20 +239,22 @@ class SPCSGeodesicOperatorList(object):
             dic_elem_val_={}
             
             for i in self._channels_list:
-                # TODO: apply all functors
-                
+                # TODO: would be better to check a feature list with memory 
+                feats_from_op = None
                 for op in self._operator_functors:
                     feature_name = self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
                     if not feature_name in dic_final:
                         dic_final[feature_name] = []
-                    dic_final[feature_name].append(op(dic_orig_slices[i]))
+                    dic_final[feature_name].append(op(dic_orig_slices[i], feats_from_op))
+                    feats_from_op = op.feats
+                    
         return dic_final
        
     def get_name(self):
         list_names = []
         for op in self._operator_functors:
             for i in self._channels_list:            
-                feature_name = self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
+                feature_name = op.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
                 list_names.append(feature_name)
                 #list_names +=[self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)]
         return list_names
