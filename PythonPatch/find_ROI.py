@@ -47,7 +47,7 @@ def GetImage(c,para):
     #pdb.set_trace()
     # do color deconvolution on the sample image. 
     dec = deconv.Deconvolution()
-    dec.params['image_type'] = 'Orig'
+    dec.params['image_type'] = 'HEDab'
     
     np_img = np.array(sample)
     dec_img = dec.colorDeconv(np_img[:,:,:3])

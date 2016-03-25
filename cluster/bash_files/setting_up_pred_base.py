@@ -13,6 +13,7 @@ import os
 from find_ROI import ROI
 from optparse import OptionParser
 import pdb
+import time
 
 if __name__ ==  "__main__":
 
@@ -47,6 +48,8 @@ if __name__ ==  "__main__":
 			slide = prefixe + "_" +(3-len(str(i)))*'0' + str(i) +".tif"
 			slide_name = os.path.join(options.folder_source, prefixe, slide)
 			save_folder = os.path.join(image_sauvegarde, slide.split('.')[0])
+			print 'slide %i / %i: %s' % (i, n_range, slide_name)
+			start_time = time.time()
 			#pdb.set_trace()
 			if not os.path.isdir(save_folder):
 				os.mkdir(save_folder)
@@ -58,4 +61,8 @@ if __name__ ==  "__main__":
 				f.write("__" + str(line) + "__ "+prefixe+" "+str(i)+" "+str(para[0])+" "+str(para[1])+" "
 						+ str(para[2]) + " " +str(para[3]) + " " + str(para[4]) +"\n")
 				line += 1
+			diff_time = time.time() - start_time
+			print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
+
+			
 	f.close()

@@ -37,17 +37,17 @@ class Deconvolution(object):
                                   [0.266844, 0.283111]])
 
         if self.params['image_type'] == "HE":
-            print "HE stain"
+            #print "HE stain"
             M = M_h_e_meas
             M_inv =  numpy.dot(linalg.inv(numpy.dot(M.T, M)), M.T)
 
         elif self.params['image_type'] == "HEDab":
-            print "HEDab stain"
+            #print "HEDab stain"
             M = M_h_e_dab_meas
             M_inv = linalg.inv(M)            
 
         else:
-            print "Unrecognized image type !! image type set to \"HE\" "
+            #print "Unrecognized image type !! image type set to \"HE\" "
             M = numpy.diag([1, 1, 1])
             M_inv = numpy.diag([1, 1, 1])
 
