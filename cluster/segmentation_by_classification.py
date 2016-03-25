@@ -152,49 +152,6 @@ class LearnSegmentation(object):
 
         return X.transpose()
 
-    def get_X_per_image_with_save_3_ttt(self,  original_image, original_image_name, folder_sauv_path,  image_sauv_path):
-        """
-        morceau de code en commun pour sauvegarder les features déjà calculés et gagner du temps.
-        deuxième version: on sauve:
-        - les vecteurs en une matrice dont la ligne correspond à un feature. (format .npy)
-        - un dictionnaire qui à chaque nom de feature (string) associe le numéro de la ligne dans la matrice précédente. (format .pickle)
-        """
-        pdb.set_trace()
-        ## Pour trouver la taille de X:
-        nb_samples = original_image.getSize()[0] * original_image.getSize()[1]
-        lili = []
-        for feature in self._features_list:
-            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
-                feature._channels_list = [0]
-            lili += feature.get_name()
-        nb_features = len(lili)
-        X = np.zeros((nb_features,  nb_samples))
-        index_lign_free = 0
-        matrix_npy = np.zeros((nb_features,  nb_samples))
-        index_lign_free_matrix_npy = 0
-        ##
-        dico_image = {}
-        for feature in self._features_list:
-            if original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
-                feature._channels_list = [0]
-            list_feat_per_channel = feature.get_name()
-            x = feature.__call__(original_image)
-            ##
-            for i in feature._channels_list:
-                if len(feature._channels_list)==1:
-                    index_lign_free_X = uf.my_concatenation_2(X, x, index_lign_free_X)
-                else:
-                    index_lign_free_X = uf.my_concatenation_2(X, x[i, :], index_lign_free_X)
-            ##
-            save_length = len(dico_image)
-            for j in range(len(list_feat_per_channel)):
-                dico_image[list_feat_per_channel[j]] = save_length + j
-                if len(list_feat_per_channel)==1:
-                    index_lign_free_matrix_npy = uf.my_concatenation_2(matrix_npy, x, index_lign_free_matrix_npy)
-                else:
-                    index_lign_free_matrix_npy = uf.my_concatenation_2(matrix_npy, x[j, :], index_lign_free_matrix_npy)
-
-        return X.transpose(),dico_image
 
     def get_X_per_image_with_save_3(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path):
         """
