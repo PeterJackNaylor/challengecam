@@ -23,6 +23,9 @@ from skimage import measure
 import os
 import sys
 import pdb 
+import FIMM_histo.deconvolution as deconv
+
+from PIL import Image
 
 def computeEvaluationMask_Peter(pixelarray,resolution,level):
     distance = nd.distance_transform_edt(255 - pixelarray[:,:])
@@ -40,7 +43,18 @@ def GetImage(c,para):
         sample=openslide.open_slide(c).read_region((para[0],para[1]),para[4],(para[2],para[3]))
     else:
         sample=c.read_region((para[0],para[1]),para[4],(para[2],para[3]))
-    return(sample)
+
+    #pdb.set_trace()
+    # do color deconvolution on the sample image. 
+    dec = deconv.Deconvolution()
+    dec.params['image_type'] = 'HEDab'
+    
+    np_img = np.array(sample)
+    dec_img = dec.colorDeconv(np_img[:,:,:3])
+    
+    new_img = Image.fromarray(dec_img.astype('uint8'))
+
+    return(new_img)
     
 
 def get_X_Y(slide,x_0,y_0,level):
