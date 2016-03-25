@@ -51,7 +51,7 @@ class Deconvolution(object):
             M = numpy.diag([1, 1, 1])
             M_inv = numpy.diag([1, 1, 1])
 
-        imDecv = numpy.dot(self.log_transform(imin), M_inv.T)
+        imDecv = numpy.dot(self.log_transform(imin.astype('float')), M_inv.T)
         imout = self.exp_transform(imDecv)
 #        imout = numpy.zeros(imDecv.shape, dtype = numpy.uint8)
     

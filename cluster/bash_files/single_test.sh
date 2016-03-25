@@ -30,4 +30,4 @@ source /share/apps/user_apps/challengecam/cluster/bash_files/peter_profile
 #FIELD5=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f6)
 #FIELD6=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f7)
 
-python /share/apps/user_apps/challengecam/cluster/Data_set.py --input_folder /share/data40T/pnaylor/Cam16 --output_folder /share/data40T_v2/challengecam_results --type Normal --id 1 --nb_samples 1000 --nb_images 2 
+python /share/apps/user_apps/challengecam/cluster/Data_set.py --input_folder /share/data40T/pnaylor/Cam16 --output_folder /share/data40T_v2/challengecam_results --type Normal --id 1 --nb_samples 1000 --nb_images 2

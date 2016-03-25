@@ -47,8 +47,8 @@ points_lbp = 8
 ## SAF waterpixels
 integrator_saf = 'mean'
 wp1 = spp.WaterpixelsFunctor({"step":15, "k":4, "filter_ori":True})
-wp2 = spp.WaterpixelsFunctor({"step":20, "k":4, "filter_ori":True})
-wp3 = spp.WaterpixelsFunctor({"step":30, "k":4, "filter_ori":True})
+wp2 = spp.WaterpixelsFunctor({"step":30, "k":4, "filter_ori":True})
+wp3 = spp.WaterpixelsFunctor({"step":50, "k":4, "filter_ori":True})
 
 ## For cross validation:
 nber_of_folds = 2
@@ -70,29 +70,24 @@ gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}
 gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5}), [0, 1],  integrator_saf,  wp1, 'pixel'),
 gf.GeneralFeature(op.MorphologicalGradientFunctor({'neighborhood':neighborhood_se, 'size':1}), [0, 1],  integrator_saf,  wp1, 'pixel'),
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+gf.GeneralFeature(op.IdentityFunctor({}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':1}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':1}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':5}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+gf.GeneralFeature(op.MorphologicalGradientFunctor({'neighborhood':neighborhood_se, 'size':1}), [0, 1],  integrator_saf,  wp2, 'pixel'),
+##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 gf.GeneralFeature(op.IdentityFunctor({}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Contrast'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Correlation'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumofSquaresVariance'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InverseDifferenceMoment'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumAverage'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumVariance'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumEntropy'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Entropy'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceVariance'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceEntropy'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation1'}), [0, 1],  wp2, 'pixel'),
-geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation2'}), [0, 1],  wp2, 'pixel'),
-##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 ]
 
-for waterpixpix in [ wp2]:
+for waterpixpix in [wp2]:
 	for sigma in [1.6]:
 		DoG = gf.GeneralFeature(op.IlastikDifferenceOfGaussians({'sigma1':sigma * np.sqrt(2),  'sigma2':sigma / np.sqrt(2)}), [0, 1],  integrator_saf,  waterpixpix, 'pixel')
 		ST1 = gf.GeneralFeature(op.IlastikStructureTensorEigenValues({'innerScale':sigma,  'outerScale':2,  'eigenvalueNumber': 0}), [0, 1],  integrator_saf,  waterpixpix, 'pixel') 

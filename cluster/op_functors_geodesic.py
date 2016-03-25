@@ -23,6 +23,7 @@ class OperatorFunctorBase(object):
            params: dictionary giving the parameters.
         """
         self._params = params
+        self.feats = None
 
     def get_name(self):
         return self.__class__.__name__
@@ -101,19 +102,30 @@ class Haralick(OperatorFunctorBase):
         return feats
         
 class HaralickFeature(Haralick):
-    def __init__(self,  params):
+    def __init__(self,  params, erase=False):
         """
         Args:
         params: dictionary containing the keys "direction" (1,2,3,4 or 'all') and  "feature_name" ("AngularSecondMoment", ...).
         """
         Haralick.__init__(self,  params)
-    
+        self.erase = erase
+        self.feats = None
+
     def get_name(self):
         return self._feature_name+"_dir_"+str(self._direction_number)
             
     
     def __call__(self,  imIn):
         feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+        #if self.erase:
+        #    self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+        #else:
+        #    if feats is None: 
+        #        self.feats = Haralick({'direction': self._direction_number,  'feature_name': self._feature_name}).__call__(imIn)
+        #    else:
+        #        self.feats = feats
+
+        #feats = self.feats
         try:
             if self._direction_number == 'all':
                 val_out1 =round(feats[0,  self._dic_features[self._feature_name]], 5)

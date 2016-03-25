@@ -27,7 +27,8 @@ if __name__ ==  "__main__":
 	                  help="Output folder", metavar="FILE")
 	(options, args) = parser.parse_args()
 
-	image_sauvegarde = os.path.join(options.folder_source,options.output)
+	#image_sauvegarde = os.path.join(options.folder_source,options.output)
+	image_sauvegarde = options.output
 	if not os.path.isdir(image_sauvegarde):
 		os.mkdir(image_sauvegarde)
 
@@ -46,6 +47,7 @@ if __name__ ==  "__main__":
 			slide = prefixe + "_" +(3-len(str(i)))*'0' + str(i) +".tif"
 			slide_name = os.path.join(options.folder_source, prefixe, slide)
 			save_folder = os.path.join(image_sauvegarde, slide.split('.')[0])
+			#pdb.set_trace()
 			if not os.path.isdir(save_folder):
 				os.mkdir(save_folder)
 			ROI_pos=ROI(slide_name, ref_level = int(options.resolution), thresh = 220, 

@@ -309,7 +309,7 @@ class LearnSegmentation(object):
                         print "We had to replace the missing value by the mean of corresponding values in the five most similar samples."
         return X
 
-    def get_X_Y_for_train(self, code, first=None, last=None, N_squares=16):
+    def get_X_Y_for_train(self, code, first=None, last=None, N_squares=16, export=False):
         """
         This method enables to compute the vector of labels
         of all classifcation units in all images of the training set.
@@ -330,7 +330,13 @@ class LearnSegmentation(object):
                 N += self._nb_samples
             else:
                 N += original_image.getWidth()*original_image.getHeight()
-        
+            if export:
+                debug_dir = '/share/data40T_v2/debug_challenge2'
+                if not os.path.isdir(debug_dir):
+                    os.makedirs(debug_dir)
+                sp.write(original_image, os.path.join(debug_dir, 'deconv_%s.png' % original_image_name))
+                sp.write(image_GT, os.path.join(debug_dir, 'gt_%s.png' % original_image_name))
+
         # get the number of features
         complete_feature_list = []
         for feat in self._features_list: complete_feature_list.extend(feat.get_name())
