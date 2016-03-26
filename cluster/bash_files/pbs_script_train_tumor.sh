@@ -11,4 +11,4 @@
 
 source /share/apps/user_apps/challengecam/cluster/bash_files/peter_profile
 
-python /cbio/donnees/twalter/src/challengecam/cluster/Data_set.py --input_folder /share/data40T/pnaylor/Cam16 --output_folder /share/data40T_v2/challengecam_results/train --type Tumor --id $SGE_TASK_ID --nb_samples 10000 --nb_images 20
+python /share/apps/user_apps/challengecam/cluster/Data_set.py --input_folder /share/data40T/pnaylor/Cam16 --output_folder /share/data40T_v2/challengecam_results/train --type Tumor --id $SGE_TASK_ID --nb_samples 20000 --nb_images 24 

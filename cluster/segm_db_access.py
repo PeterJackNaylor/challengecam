@@ -145,6 +145,9 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
             self._im_dir["train"] = os.path.join(dir_in,"Tumor")
         else:
             self._im_dir["train"] = os.path.join(dir_in,"Normal")
+	self._im_dir['test'] = os.path.join(dir_in, "Test")
+	self._im_dir['prediction'] = os.path.join(dir_in, "Test")
+
 #        self._im_dir["val"] = os.path.join(dir_in, "images/val")
 #        self._im_dir["test"] = os.path.join(dir_in, "images/test")
         self._segm_dir["train"] = os.path.join(dir_in, "Tumor_Mask")
@@ -156,6 +159,7 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
         self.slide_to_do = slide_to_do
         self.type_method = type_method
         self.dico_ROI = dico_ROI
+
     def train_training(self):
         return self.iter_training("train")
     
@@ -274,7 +278,8 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
 
         Returns for each imagette: (imagette, corresponding GT, name_imagette)
         """
-        
+       
+ 	#pdb.set_trace() 
         if self.slide_to_do is None:
             for im_file in os.listdir(self._im_dir[code])[first:last]:
                 #debug_mess("Processing file %s" % os.path.basename(im_file))
@@ -298,11 +303,19 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
         
         Returns for each imagette: (imagette, name_imagette)
         """
-        for im_file in os.listdir(self._im_dir[code])[first:last]:
-            #debug_mess("Processing file %s" % os.path.basename(im_file))
-            list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
-            for i in range(len(list_of_imagettes)):
-                yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+        if self.slide_to_do is None:
+            for im_file in os.listdir(self._im_dir[code])[first:last]:
+                #debug_mess("Processing file %s" % os.path.basename(im_file))
+            	list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
+            	for i in range(len(list_of_imagettes)):
+                	yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+	else:
+            for im_file in os.listdir(self._im_dir[code])[first:last]:
+                if self.slide_to_do in im_file:
+            	   list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
+            	   for i in range(len(list_of_imagettes)):
+                	yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+
 ##----------------------------------------------------------------
 
 

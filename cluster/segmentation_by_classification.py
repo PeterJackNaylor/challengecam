@@ -221,7 +221,7 @@ class LearnSegmentation(object):
         # I modified this, because we need the number of samples to be determined before calling this function
         # in particular it should not depend on the number of labels (this is to avoid np.concatenate).
         # I am aware of the bias this generates. 
-        nb_samples_per_image_per_label = self._nb_samples
+        nb_samples_per_image_per_label = self._nb_samples / nb_labels
         X_sample = None
         for label in labels:
             mask_index = [i for i in np.arange(len(Y)) if Y[i]==label]
@@ -305,17 +305,22 @@ class LearnSegmentation(object):
         Y_train = np.zeros((N, 1))        
 
         i = 0
-    
+
         for original_image, image_GT,  original_image_name in self._db_server.iter_training(code, first, last, N_squares=N_squares):
             
             X_image, dico= self.get_X_per_image(original_image, original_image_name)
             image_uc_lab = self.transform_image_uc(original_image)
             Y_image = self.get_Y_per_image(image_uc_lab, image_GT)
             print "Name: ", original_image_name
-            
+            print "Size: ", original_image.getSize()
+            print "dim(X): ", X_image.shape
+
             if self._nb_samples is not None:
                 X_image, Y_image = self.subsample(X_image, Y_image, code)
-            
+
+            print "Size: ", original_image.getSize()
+            print "dim(X): ", X_image.shape
+            #pdb.set_trace() 
             X_train[i:(i+X_image.shape[0]),:] = X_image[:,:]
             Y_train[i:(i+Y_image.shape[0]),:] = Y_image[:,:]
             i += X_image.shape[0]
