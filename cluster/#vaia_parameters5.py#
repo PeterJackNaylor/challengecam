@@ -4,7 +4,7 @@ Description:
 Challenge CAMELYON16.
 This file contains Peter's parameters for script_classification.py. 
 
-Authors:  Vaïa Machairas, Etienne Decencière, Peter Naylor, Thomas Walter.
+Authors:  VaÃ¯a Machairas, Etienne DecenciÃ¨re, Peter Naylor, Thomas Walter.
 
 Creation date: 2016-02-24
 """
@@ -33,7 +33,7 @@ EVALUATION = False
 
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## on a besoin du chemin d'acc�s de la base: base_path
+## on a besoin du chemin d'accès de la base: base_path
 base = "CAMELYON_1"
 base_path = "/home/vaiamachairas/Documents/challengeCAMELYON16/base_tmp/Temp_Vaia/"
 #base = "my_verif"
@@ -54,12 +54,11 @@ wp3 = spp.WaterpixelsFunctor({"step":50, "k":4, "filter_ori":True})
 nber_of_folds = 2
 ## Number of samples if needed: " REDUCTION2"
 NB_SAMPLES = None
-NB_SAMPLES = 1000##pour l'instant le laisser désactivé car gère le nb de slides, pas le nombre d'imagettes. A modifier.
+NB_SAMPLES = 1000##pour l'instant le laisser dÃ©sactivÃ© car gÃ¨re le nb de slides, pas le nombre d'imagettes. A modifier.
 
 ###--------###--------###--------###--------###--------###--------###--------
 ## List of features:
 pixel_features_list = [
-
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 gf.GeneralFeature(op.IdentityFunctor({}), [0, 1],  integrator_saf,  wp1, 'pixel'),
 gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':1}), [0, 1],  integrator_saf,  wp1, 'pixel'),
@@ -85,41 +84,11 @@ gf.GeneralFeature(op.IdentityFunctor({}), [0, 1],  integrator_saf,  wp3, 'pixel'
 gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
-gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-geo.GeneralFeatureGeodesicList([og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}, erase=True),
-                       				       	 og.HaralickFeature({'direction': 'all',  'feature_name': 'Contrast'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'Correlation'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'SumofSquaresVariance'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'InverseDifferenceMoment'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'SumAverage'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'SumVariance'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'SumEntropy'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'Entropy'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceVariance'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceEntropy'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation1'}), 
-                                                         og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation2'})], [0, 1],  wp2, 'pixel'),
-
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Contrast'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Correlation'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumofSquaresVariance'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InverseDifferenceMoment'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumAverage'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumVariance'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'SumEntropy'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'Entropy'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceVariance'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'DifferenceEntropy'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation1'}), [0, 1],  wp2, 'pixel'),
-#geo.GeneralFeatureGeodesic(og.HaralickFeature({'direction': 'all',  'feature_name': 'InformationMeasureofCorrelation2'}), [0, 1],  wp2, 'pixel'),
-##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 ]
 
-for waterpixpix in [wp1,wp2]:
-	for sigma in [.8, 1.6, 4.0]:
+for waterpixpix in [wp2]:
+	for sigma in [1.6]:
 		DoG = gf.GeneralFeature(op.IlastikDifferenceOfGaussians({'sigma1':sigma * np.sqrt(2),  'sigma2':sigma / np.sqrt(2)}), [0, 1],  integrator_saf,  waterpixpix, 'pixel')
 		ST1 = gf.GeneralFeature(op.IlastikStructureTensorEigenValues({'innerScale':sigma,  'outerScale':2,  'eigenvalueNumber': 0}), [0, 1],  integrator_saf,  waterpixpix, 'pixel') 
 		ST2 = gf.GeneralFeature(op.IlastikStructureTensorEigenValues({'innerScale':sigma,  'outerScale':2,  'eigenvalueNumber': 1}), [0, 1],  integrator_saf,  waterpixpix, 'pixel')

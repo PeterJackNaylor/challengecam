@@ -242,18 +242,36 @@ class SPCSGeodesicOperatorList(object):
                 # TODO: would be better to check a feature list with memory 
                 feats_from_op = None
                 for op in self._operator_functors:
-                    feature_name = self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
+                    # todo: remove _
+                    feature_name = op.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
                     if not feature_name in dic_final:
                         dic_final[feature_name] = []
                     dic_final[feature_name].append(op(dic_orig_slices[i], feats_from_op))
                     feats_from_op = op.feats
-                    
-        return dic_final
+
+	# the list of all features (channel is hard coded in the feature names)
+        features = self.get_name()
+
+	# get a matrix nb_features x nb_superpixels with all feature values
+        Xsp = np.array([dic_final[x] for x in features])
+
+	if self._uc == "pixel":
+	    # get a vector with a concatenation of all lines of the superpixel image (label image)
+	    # the -1 comes from the fact that the label image starts with 1. 
+            indices = np.ravel(image_sp.getNumArray()) - 1        
+	    # we simply slice Xsp to get the final pixel features
+            X = Xsp[:,indices]
+        else:
+	    # in case we want to classify superpixels, the initial matrix was fine. 
+            X = Xsp
+
+        return X 
        
     def get_name(self):
         list_names = []
         for op in self._operator_functors:
-            for i in self._channels_list:            
+            for i in self._channels_list:           
+		# todo: remove _ 
                 feature_name = op.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
                 list_names.append(feature_name)
                 #list_names +=[self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)]
@@ -267,11 +285,7 @@ class GeneralFeatureGeodesicList(SPCSGeodesicOperatorList):
         self._uc = uc
         
     def __call__(self,  original_image):
-        dic_final = SPCSGeodesicOperatorList.__call__(self, original_image)
-        features = self.get_name()
-        
-        X = np.array([dic_final[x] for x in features])
-        
+        X = SPCSGeodesicOperatorList.__call__(self, original_image)
         return X
         
 
@@ -289,7 +303,10 @@ class GeneralFeatureGeodesic(SPCSGeodesicOperator):
         X_feature_t = np.array([])
 
         for elem in dic_channels_spvals.keys(): ##elem: numéro d'un cannal
-            vals_list =[dic_channels_spvals[elem][i] for i in range(len(dic_channels_spvals[elem]))] ## i : numéro d'un superpixel
+            #vals_list =[dic_channels_spvals[elem][i] for i in range(len(dic_channels_spvals[elem]))] ## i : numéro d'un superpixel
+            #array_vals = np.array(vals_list)
+            #pdb.set_trace()
+            vals_list = dic_channels_spvals[elem]
             array_vals = np.array(vals_list)
             if self._uc == "pixel":
                 image_sp = self._spp_method(original_image)
