@@ -204,7 +204,7 @@ class LearnSegmentation(object):
             start_time = time.time()
             #print '%s : calc = %i seconds\tupdate = %i seconds' % (feature.get_name(), int(feat_time), int(update_time))
         #print "taille X",  X.shape
-	final_diff_time = time.time() - init_te
+	final_diff_time = time.time() - init_time
 	print 'time elapsed (feature calculation): %02i:%02i' % ((final_diff_time/60),  (final_diff_time%60))
         return X.transpose(),dico_image
 
