@@ -90,10 +90,11 @@ if __name__ ==  "__main__":
 	original_image_name = alll[0][1]
 	folder_sauv_path = options.out
 
-	image_sauv_path = folder_sauv_path+"/"+original_image_name.split('_')[0] + "_" + original_image_name.split('_')[1]
-
+	#image_sauv_path = folder_sauv_path+"/"+original_image_name.split('_')[0] + "_" + original_image_name.split('_')[1]
+	image_sauv_path = os.path.join(folder_sauv_path, '_'.join(original_image_name.split('_')[:2]))
+	print image_sauv_path
 	X = classif.get_X_per_image_with_save_3(original_image,  original_image_name,
-							 folder_sauv_path,  image_sauv_path)
+							 folder_sauv_path,  image_sauv_path, save=True)
 	#X = classif.deal_with_missing_values_2(X)
  	# we can deal with missing value later. 
 

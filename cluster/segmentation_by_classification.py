@@ -153,7 +153,7 @@ class LearnSegmentation(object):
         return X.transpose()
 
 
-    def get_X_per_image_with_save_3(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path):
+    def get_X_per_image_with_save_3(self,  original_image,  original_image_name, folder_sauv_path,  image_sauv_path, save=False):
         """
         morceau de code en commun pour sauvegarder les features déjà calculés et gagner du temps.
         deuxième version: on sauve:
@@ -205,6 +205,21 @@ class LearnSegmentation(object):
             #print '%s : calc = %i seconds\tupdate = %i seconds' % (feature.get_name(), int(feat_time), int(update_time))
         #print "taille X",  X.shape
 	final_diff_time = time.time() - init_time
+
+        if save:
+	    #folder_sauv_path = options.out
+       	    #image_sauv_path = folder_sauv_path+"/"+original_image_name.split('_')[0] + "_" + original_image_name.split('_')[1]
+
+            print "save new dict"
+            np_name = os.path.join(image_sauv_path, '%s.npy' % os.path.splitext(original_image_name)[0])
+            pickle_name = os.path.join(image_sauv_path, '%s.pickle' % os.path.splitext(original_image_name)[0])
+            im_pickle = open(pickle_name,  'w')
+            pickle.dump(dico_image,  im_pickle)
+            im_pickle.close()
+            print "save new matrix (%i x %i)" % (X.shape[1], X.shape[0])
+            np.save(np_name,  X.T)
+        #####   à enlever ensuite: pour etude temporaire des features si image ndg
+
 	print 'time elapsed (feature calculation): %02i:%02i' % ((final_diff_time/60),  (final_diff_time%60))
         return X.transpose(),dico_image
 

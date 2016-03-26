@@ -23,7 +23,7 @@ spe_tag=__
 
 source /share/apps/user_apps/challengecam/cluster/bash_files/peter_profile
 
-SGE_TASK_ID=1
+SGE_TASK_ID=23
 
 FILE=settings_for_pred_base.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
 FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
@@ -35,7 +35,7 @@ FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 FIELD7=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f8)
 
 
-echo python /share/apps/user_apps/challengecam/cluster/Pred_Data_set.py -s $CAM16 -t $FIELD1 -n $FIELD2 -x $FIELD3 -y $FIELD4 -w $FIELD5 --height $FIELD6 -r $FIELD7 -o $CAM16/Pred_data_set
+echo python /share/apps/user_apps/challengecam/cluster/Pred_Data_set.py -s $CAM16 --type $FIELD1 --number $FIELD2 -x $FIELD3 -y $FIELD4 --width $FIELD5 --height $FIELD6 --resolution $FIELD7 --output $OUTPUT_FOLDER
 
 python /share/apps/user_apps/challengecam/cluster/Pred_Data_set.py -s $CAM16 --type $FIELD1 --number $FIELD2 -x $FIELD3 -y $FIELD4 --width $FIELD5 --height $FIELD6 --resolution $FIELD7 --output $OUTPUT_FOLDER
 
