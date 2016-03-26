@@ -202,9 +202,9 @@ class LearnSegmentation(object):
             #        matrix_npy = uf.my_concatenation(matrix_npy,  x[j, :])
             update_time = time.time() - start_time
             start_time = time.time()
-            print '%s : calc = %i seconds\tupdate = %i seconds' % (feature.get_name(), int(feat_time), int(update_time))
+            #print '%s : calc = %i seconds\tupdate = %i seconds' % (feature.get_name(), int(feat_time), int(update_time))
         #print "taille X",  X.shape
-	final_diff_time = time.time() - init_time
+	final_diff_time = time.time() - init_te
 	print 'time elapsed (feature calculation): %02i:%02i' % ((final_diff_time/60),  (final_diff_time%60))
         return X.transpose(),dico_image
 

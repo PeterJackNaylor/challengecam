@@ -85,7 +85,6 @@ gf.GeneralFeature(op.IdentityFunctor({}), [0, 1],  integrator_saf,  wp3, 'pixel'
 gf.GeneralFeature(op.ErosionFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.OpeningFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':3}), [0, 1],  integrator_saf,  wp3, 'pixel'),
-gf.GeneralFeature(op.TopHatInvFunctor({'neighborhood':neighborhood_se, 'size':5}), [0, 1],  integrator_saf,  wp3, 'pixel'),
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 geo.GeneralFeatureGeodesicList([og.HaralickFeature({'direction': 'all',  'feature_name': 'AngularSecondMoment'}, erase=True),
                        				       	 og.HaralickFeature({'direction': 'all',  'feature_name': 'Contrast'}), 
@@ -118,7 +117,7 @@ geo.GeneralFeatureGeodesicList([og.HaralickFeature({'direction': 'all',  'featur
 
 ]
 
-for waterpixpix in [wp1,wp2]:
+for waterpixpix in [wp2]:
 	for sigma in [.8, 1.6, 4.0]:
 		DoG = gf.GeneralFeature(op.IlastikDifferenceOfGaussians({'sigma1':sigma * np.sqrt(2),  'sigma2':sigma / np.sqrt(2)}), [0, 1],  integrator_saf,  waterpixpix, 'pixel')
 		ST1 = gf.GeneralFeature(op.IlastikStructureTensorEigenValues({'innerScale':sigma,  'outerScale':2,  'eigenvalueNumber': 0}), [0, 1],  integrator_saf,  waterpixpix, 'pixel') 
