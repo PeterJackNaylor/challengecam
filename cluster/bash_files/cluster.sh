@@ -4,7 +4,7 @@
 #$ -S /bin/bash #set bash environment
 #$ -N Normal # name of the job as it will appear in qstat -f
 #$ -o logs
-#$ -l h_vmem=4G
+#$ -l h_vmem=6G
 #$ -M peter.naylor@mines-paristech.fr # set email adress to notify once a job changes states as specified by -m
 #$ -m ae # a- send mail when job is aborted by batch system ; b- send mail when begins execution; e- send mail when job ends; n- do not send mail
 
@@ -14,8 +14,8 @@
 
 
 
-#$ -t 1-160 # les valeures successives que va prendre $SGE_TASK_ID
-#$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
+#$ -t 34 # les valeures successives que va prendre $SGE_TASK_ID
+#$ -tc 1 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
 
 
