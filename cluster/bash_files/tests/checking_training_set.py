@@ -3,14 +3,14 @@
 ### and will also tell the number of variables and the 
 ### number of lines in total.
 
-
+import pdb
 import os
 import numpy as np
 from optparse import OptionParser
-import cPickles as pkl
+import cPickle as pkl
 
 
-def f(file, output, dic_ref ):
+def f(file, output, dic_ref ,seuil = 10000):
 	try:
 		if ".pickle" in file:
 
@@ -24,16 +24,19 @@ def f(file, output, dic_ref ):
 			key_ref = np.sort(dic_ref.keys())
 
 
-			if not(val == val_ref and key == key_ref):
+			if not((val == val_ref).all() and (key == key_ref).all()):
+				#pdb.set_trace()
 				output.write("Problems with "+file+"\n")
 		
 		else:
 
 			y = np.load(file)
 			TUP = y.shape
+			if TUP[0] < seuil:
+				output.write("File "+file+" has less then "+str(seuil)+"lines \n" )
 
 	except:
-
+		#pdb.set_trace()
 		output.write("Problems with "+file+"\n")
 
 
@@ -48,6 +51,8 @@ if __name__ ==  "__main__":
 	                  help="Where to find Tumor files", metavar="FILE")
 	parser.add_option("-o", "--output", dest="output",
 	                  help="Output folder", metavar="FILE")
+	parser.add_option("-e","--seuil",dest="seuil",default="10000",
+			  help="threshold for number of lines to print",metavar="INT")
 	(options, args) = parser.parse_args()
 
 	n_lines = 0
@@ -62,7 +67,7 @@ if __name__ ==  "__main__":
 		else:
 			n_range = 160
 
-		for i in range(n_range):
+		for i in range(1,n_range+1):
 			
 			digit = "%03d" % (i,)
 			slide = pref + "_" + digit
@@ -73,7 +78,10 @@ if __name__ ==  "__main__":
 			for s in suff:
 
 				file = os.path.join(ad, slide + s)
-				f(file, of, variables)
+				if variables == {}:
+					if s == ".pickle":
+						variables = pkl.load(open(file,'r'))
+				f(file, of, variables, int(options.seuil))
 				try:
 					if "_y_" in file:
 						y = np.load(file)
@@ -81,7 +89,11 @@ if __name__ ==  "__main__":
 						s_max = np.max(y)
 						if s_max != 0:
 							s = s / s_max
-							n_ones + = s
+							n_ones += s
 						n_lines += y.shape[0]
-	of.write("Their is %d lines \n") % n_lines
-	of.write("Their is %d ones \n") % n_ones
+				except:
+					#pdb.set_trace()
+					#print file + "\n"
+					pppppp = 1	
+	of.write("Their is %d lines \n" % n_lines)
+	of.write("Their is %d ones \n" % n_ones)

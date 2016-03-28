@@ -32,7 +32,7 @@ from forest_Peter import *
 from optparse import OptionParser
 
 ### metrics to use
-from sklearn.metrics import roc_auc_score,accuracy_score,f1_score
+from sklearn.metrics import roc_auc_score,accuracy_score,f1_score,confusion_matrix
 
 ##---------------------------------------------------------------------------------------------------------------------------------------
 ##---------------------------------------------------------------------------------------------------------------------------------------
@@ -40,6 +40,28 @@ from sklearn.metrics import roc_auc_score,accuracy_score,f1_score
 ############### Before doing anything you have 
 ############### to get a fold file, so launch that script
 ###############
+
+def Score(Y_pred,Y_hat):
+    TP = 0
+    FP = 0
+    TN = 0
+    FN = 0
+
+    for i in range(len(Y_hat)): 
+        if Y_pred[i]==Y_hat[i]==1:
+           TP += 1
+    for i in range(len(Y_hat)): 
+        if Y_pred[i]==1 and Y_pred!=Y_hat[i]:
+           FP += 1
+    for i in range(len(Y_hat)): 
+        if Y_pred[i]==Y_hat[i]==0:
+           TN += 1
+    for i in range(len(Y_hat)): 
+        if Y_pred[i]==0 and Y_pred!=Y_hat[i]:
+           FN += 1
+
+return(TP, FP, TN, FN)
+
 
 if __name__ ==  "__main__":
 
@@ -65,7 +87,7 @@ if __name__ ==  "__main__":
 	(options, args) = parser.parse_args()
 
 
-	version_para = { 'n_sub': options.n_samples }
+	version_para = { 'n_sub': int(options.n_samples) }
 
 	
 	saving_location = os.path.join(options.folder_source, options.version)
@@ -74,7 +96,7 @@ if __name__ ==  "__main__":
 	f = open(kfold_file,'r')
 	all_para = f.read().split('\n')
 	
-	i = options.k_folds ## fold number
+	i = int(options.k_folds) ## fold number
 
 	Normal_slides_train = from_list_string_to_list_Tumor(all_para[ i*11 + 3 ],all_para[ i*11 + 2 ])
 	Tumor_slides_train  = from_list_string_to_list_Tumor(all_para[ i*11 + 5 ],all_para[ i*11 + 4 ])
@@ -100,55 +122,58 @@ if __name__ ==  "__main__":
 
 
 	X_train = np.zeros(shape=(n_train, p_train))
-	X_train[0:options.n_samples,:] = X_temp
+	X_train[0:int(options.n_samples),:] = X_temp
 
 	Y_train = np.zeros(n_train)
-	Y_train[0:options.n_samples] = Y_temp
+	Y_train[0:int(options.n_samples)] = Y_temp
 
 	i = 1
 
 	for sample_name in training_names[1::]:
+		try:
+			image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
+			image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
+			image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
 
-		image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
-		image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
-		image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
+			X_temp = np.load( image_sauv_name_npy )
+			Y_temp = np.load( image_sauv_name_y_npy ).ravel()
+			index = subsample(Y_temp, options.version, version_para)
 
-		X_temp = np.load( image_sauv_name_npy )
-		Y_temp = np.load( image_sauv_name_y_npy ).ravel()
-		index = subsample(Y_temp, options.version, version_para)
+			X_temp = X_temp[index,:]
+			Y_temp = Y_temp[index]
 
-		X_temp = X_temp[index,:]
-		Y_temp = Y_temp[index]
+			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = X_temp
+			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp
+		except:
+			print sample_name+" was not possible \n"
 
-		X_train[ i * options.n_samples : (i+1) * options.n_samples ] = X_temp
-		Y_train[ i * options.n_samples : (i+1) * options.n_samples ] = Y_temp
-
-
-	myforest = PeterRandomForestClassifier(n_estimators = options.n_tree, max_features = options.mtry,
-										   max_depth = None, n_bootstrap = options.n_bootstrap ) ## penser a changer bootstrap
+	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.mtry),
+										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
 
 	myforest.fit(X_train,Y_train)
 
+	D = {'TP':0,'FP':0,'TN':0,'FN':0}
+
 	for sample_name in Normal_slides_train+Tumor_slides_test:
+		try:
+			image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
+			image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
 
-		image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
-		image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
+			X_pred = np.load( image_sauv_name_npy )
+			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
 
-		X_pred = np.load( image_sauv_name_npy )
-		Y_pred = np.load( image_sauv_name_y_npy ).ravel()
+			Y_hat = myforest.predict(X_pred)
+			Y_hat_prob = myforest.predict_proba(X_pred)
+			TP, FP, TN, FN = Score(Y_pred,Y_hat)
+			D['TP'] += TP
+			D['FP'] += FP
+			D['TN'] += TN
+			D['FN'] += FN
+		except:
+			print sample_name+" was not possible \n"
+	file_name = "score_fold_"+options.k_folds+"_"+options.n_tree+"_"+options.mtry+"_"+options.n_bootstrap+".pickle"
+	image_sauv_name_score = os.path.join(saving_location , file_name)
 
-		Y_hat = myforest.predict(X_pred)
-		Y_hat_prob = myforest.predict_proba(X_pred)
+	im_pickle = open(image_sauv_name_score,  'w')
 
-		auc = roc_auc_score(Y_pred, Y_hat_prob)
-		acc = accuracy_score(Y_pred, Y_hat)
-		f1_ = f1_score(Y_pred, Y_hat)
-		rec = recall_score(Y_pred, Y_hat)
-		pre = precision_score(Y_pred, Y_hat)
-
-		image_sauv_name_score = os.path.join(saving_location ,sample_name, "score_fold_"+str(options.k_folds)+ ".pickle")
-		
-		im_pickle = open(image_sauv_name_score,  'w')
-
-		D = {'auc':auc, 'accuracy':acc, 'f1':f1_, 'recall':rec, 'precision':pre}
-		pickle.dump(image_sauv_name_score,D)
+	pickle.dump(image_sauv_name_score,D)
