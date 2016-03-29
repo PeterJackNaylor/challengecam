@@ -59,7 +59,7 @@ if __name__ ==  "__main__":
 	n_ones = 0
 	variables = {}
 
-	of = open("output_checking_training_set.txt", "a")
+	of = open(os.path.join(options.output,"output_checking_training_set.txt"), "a")
 	for pref in ["Tumor","Normal"]:
 
 		if "Tumor"==pref:
