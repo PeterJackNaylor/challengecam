@@ -69,6 +69,8 @@ if __name__ ==  "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--source", dest="folder_source",
 	                  help="Where to find Tumor files", metavar="FILE")
+	parser.add_option("-f","--kfold_file",dest="kfold_file",
+					  help="where to find the kfold file",metavar="FILE")
 	parser.add_option("-k", "--fold", dest="k_folds",
 	                  help="Number of the fold in the cross validation", metavar="int")
 	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
@@ -90,7 +92,7 @@ if __name__ ==  "__main__":
 	
 	saving_location = os.path.join(options.folder_source)
 	
-	kfold_file = os.path.join(saving_location,'kfold.txt')
+	kfold_file = options.kfold_file
 	f = open(kfold_file,'r')
 	all_para = f.read().split('\n')
 	
