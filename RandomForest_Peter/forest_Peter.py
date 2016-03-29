@@ -71,6 +71,9 @@ def _parallel_build_trees_Peter(tree, forest, X, y, sample_weight, tree_idx, n_t
 
     return tree
     
+def _parallel_helper(obj, methodname, *args, **kwargs):
+    """Private helper to workaround Python 2 pickle limitations"""
+    return getattr(obj, methodname)(*args, **kwargs)
     
     
 class PeterBaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
