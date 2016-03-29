@@ -74,26 +74,31 @@ if __name__ ==  "__main__":
 			ad = os.path.join(options.folder_source, slide)
 
 			suff = [".npy", ".pickle", "_y_.npy"]
-			
-			for s in suff:
+			try:
+				file_npy = os.path.join(ad, slide + ".npy")
+				X = np.load(file_npy)
+				index_to_keep_X = np.where(X.any(axis=1))[0]
 
-				file = os.path.join(ad, slide + s)
+				X = X[index_to_keep_X,:]
+
+				file_y_npy = os.path.join(ad, slide + "_y_.npy")
+				y = np.load(file_y_npy)
+				y = y[index_to_keep_X,:]
+
+				file_pkl = os.path.join(ad, slide + ".pickle")
 				if variables == {}:
-					if s == ".pickle":
-						variables = pkl.load(open(file,'r'))
-				f(file, of, variables, int(options.seuil))
+					variables = pkl.load(open(file_pkl,'r'))
+				f(file_pkl, of, variables, int(options.seuil))
+
+				n_lines += X.shape[0]
 				try:
-					if "_y_" in file:
-						y = np.load(file)
-						s = np.sum(y)
-						s_max = np.max(y)
-						if s_max != 0:
-							s = s / s_max
-							n_ones += s
-						n_lines += y.shape[0]
+					s = np.sum(y)
+					s_max = np.max(y)
+					if s_max != 0:
+						s = s / s_max
+						n_ones += s
 				except:
-					#pdb.set_trace()
-					#print file + "\n"
-					pppppp = 1	
+					pass
+	
 	of.write("Their is %d lines \n" % n_lines)
 	of.write("Their is %d ones \n" % n_ones)

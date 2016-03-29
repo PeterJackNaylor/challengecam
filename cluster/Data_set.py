@@ -41,7 +41,7 @@ if __name__ ==  "__main__":
 
 	#from cluster_parameters import *
 
-        parser = OptionParser(usage="usage: %prog [options]",
+    parser = OptionParser(usage="usage: %prog [options]",
 			      description=description)
 	parser.add_option("-i", "--input_folder", dest="input_folder",
 			  help="input folder")
@@ -51,7 +51,7 @@ if __name__ ==  "__main__":
 			  help="type of the image; can be either tumor or normal.")
 	parser.add_option("--id", dest="img_id", 
                           help="image id.")    
-        parser.add_option("--nb_samples", dest="nb_samples",
+    parser.add_option("--nb_samples", dest="nb_samples",
                           help="number of pixels drawn from the slide.")
 	parser.add_option("--nb_images", dest="nb_images",
                           help="number of images drawn from the slide.")
@@ -62,7 +62,7 @@ if __name__ ==  "__main__":
 	if (options.input_folder is None) or (options.output_folder is None) or (options.img_id is None):
 		parser.error("incorrect number of arguments!")
 	
-        if not options.nb_samples is None:
+    if not options.nb_samples is None:
 		nb_samples=int(options.nb_samples)
 	else:
 		nb_samples = 100000
@@ -76,8 +76,8 @@ if __name__ ==  "__main__":
         
 	saving_location = os.path.join(options.output_folder, slide_id)	  
 	if not os.path.isdir(saving_location):
-	       print 'making ', saving_location
-	       os.makedirs(saving_location)
+	    print 'making ', saving_location
+	    os.makedirs(saving_location)
 	   
 	db_server = sdba.SegmChallengeCamelyon16(options.input_folder, slide_to_do=slide_id)
 
@@ -103,6 +103,6 @@ if __name__ ==  "__main__":
 	pickle.dump(dico,  im_pickle)
 	im_pickle.close()
 	
-        print "save new matrix " + slide_id
+    print "save new matrix " + slide_id
 	np.save(image_sauv_name_npy,  X)
 	np.save(os.path.join(saving_location ,  slide_id + "_y_.npy"), Y)
