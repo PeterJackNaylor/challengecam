@@ -90,9 +90,13 @@ if __name__ ==  "__main__":
 				y = y[index_to_keep_X,:]
 
 				np.save(file_npy, y)
+				
+				if X.shape[0] < int(options.seuil):
+					 of.write(slide+" has less then "+options.seuil+" lines \n")
+
 
 				file_pkl = os.path.join(ad, slide + ".pickle")
-				
+
 				if variables == {}:
 					variables = pkl.load(open(file_pkl,'r'))
 				f(file_pkl, of, variables, int(options.seuil))
