@@ -21,12 +21,10 @@ if __name__ ==  "__main__":
 	input_2 = sys.argv[2]
 	#### folder address
 
-	input_3 = sys.argv[3]
-	#### version name
 
 	folder_Normal = os.path.join(input_2,'Normal')
 	folder_Tumor  = os.path.join(input_2,'Tumor')
-	file_name = os.path.join(input_2, input_3, 'kfold.txt')
+	file_name = os.path.join(input_2, 'kfold.txt')
 
 	nber_Normal = 160
 	nber_Tumor  =  110
