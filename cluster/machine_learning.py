@@ -75,8 +75,8 @@ if __name__ ==  "__main__":
 	                  help="Number of the fold in the cross validation", metavar="int")
 	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
 					  help="Number of samples taking from one image",metavar="int")
-	parser.add_option("-ve","--version",dest="version",
-					  help="Version", dest="version name")
+	parser.add_option("-ve","--version",dest="version",default="default",
+					  help="sub sample Version",metavar="string")
 	parser.add_option("-t","--n_tree",dest="n_tree",
 					  help="Number of trees for the random Forest",metavar="int")
 	parser.add_option("-p","--m_try",dest="m_try",
