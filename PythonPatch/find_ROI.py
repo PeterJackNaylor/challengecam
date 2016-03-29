@@ -511,9 +511,11 @@ def subsample(Y,version,version_para):
         if 'n_sub' not in version_para:
             raise NameError("missing parameter n_sub in input dictionnary")
         else:
-            n_sub = version_para['n_sub']
+            n_val = len(val)
+            n_sub = version_para['n_sub'] / n_val
 
         list_res = []
+
         for values,frequency in iter_obj:
             index_val = np.where(Y == values)[0]
             random.shuffle(index_val)
