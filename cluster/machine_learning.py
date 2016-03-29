@@ -84,6 +84,8 @@ if __name__ ==  "__main__":
 					  help="Number of selected features at each tree",metavar="int")
 	parser.add_option("-b","--bootstrap",dest="n_bootstrap",
 					  help="Number of selected instances at each tree",metavar="int")
+	parser.add_option("--save", dest="save",default="1",
+					  help="booleen to save, 0: True 1: False", metavar="bool")
 
 	(options, args) = parser.parse_args()
 
@@ -157,7 +159,8 @@ if __name__ ==  "__main__":
 										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
 	pdb.set_trace()
 	myforest.fit(X_train,Y_train)
-
+	if int(options.save) == 0:
+		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.mtry+"_boot_"+options.n_bootstrap+".pickle"
 	D = {'TP':0,'FP':0,'TN':0,'FN':0}
 
 	for sample_name in Normal_slides_train+Tumor_slides_test:
@@ -177,9 +180,9 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible \n"
-	file_name = "score_fold_"+options.k_folds+"_"+options.n_tree+"_"+options.mtry+"_"+options.n_bootstrap+".pickle"
+	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 	im_pickle = open(image_sauv_name_score,  'w')
 
-	pickle.dump(image_sauv_name_score,D)
+	pickle.dump(image_sauv_name_score, D)
