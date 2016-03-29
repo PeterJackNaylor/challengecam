@@ -99,6 +99,6 @@ if __name__ ==  "__main__":
 						n_ones += s
 				except:
 					pass
-	
+					tttttt = 1
 	of.write("Their is %d lines \n" % n_lines)
 	of.write("Their is %d ones \n" % n_ones)
