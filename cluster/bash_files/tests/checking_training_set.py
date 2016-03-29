@@ -102,6 +102,5 @@ if __name__ ==  "__main__":
 					tttttt = 1
 			except:
 				of.write("Problems with "+slide+"\n")
->>>>>>> 91f5b123b92d12abbe569cc38ba6c5cff5eb2646
 	of.write("Their is %d lines \n" % n_lines)
 	of.write("Their is %d ones \n" % n_ones)
