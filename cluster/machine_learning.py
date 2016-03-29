@@ -42,25 +42,23 @@ from sklearn.metrics import roc_auc_score,accuracy_score,f1_score,confusion_matr
 ###############
 
 def Score(Y_pred,Y_hat):
-    TP = 0
-    FP = 0
-    TN = 0
-    FN = 0
-
-    for i in range(len(Y_hat)): 
-        if Y_pred[i]==Y_hat[i]==1:
-           TP += 1
-    for i in range(len(Y_hat)): 
-        if Y_pred[i]==1 and Y_pred!=Y_hat[i]:
-           FP += 1
-    for i in range(len(Y_hat)): 
-        if Y_pred[i]==Y_hat[i]==0:
-           TN += 1
-    for i in range(len(Y_hat)): 
-        if Y_pred[i]==0 and Y_pred!=Y_hat[i]:
-           FN += 1
-
-return(TP, FP, TN, FN)
+	TP = 0
+	FP = 0
+	TN = 0
+	FN = 0
+	for i in range(len(Y_hat)): 
+		if Y_pred[i]==Y_hat[i]==1:
+			TP += 1
+	for i in range(len(Y_hat)): 
+		if Y_pred[i]==1 and Y_pred!=Y_hat[i]:
+			FP += 1
+	for i in range(len(Y_hat)): 
+		if Y_pred[i]==Y_hat[i]==0:
+			TN += 1
+	for i in range(len(Y_hat)): 
+		if Y_pred[i]==0 and Y_pred!=Y_hat[i]:
+			FN += 1
+	return(TP, FP, TN, FN)
 
 
 if __name__ ==  "__main__":
