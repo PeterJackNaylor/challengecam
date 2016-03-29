@@ -48,16 +48,16 @@ def Score(Y_pred,Y_hat):
 	TN = 0
 	FN = 0
 	for i in range(len(Y_hat)): 
-		if Y_pred[i]==Y_hat[i]==1:
-			TP += 1
-	for i in range(len(Y_hat)): 
-		if Y_pred[i]==1 and Y_pred!=Y_hat[i]:
-			FP += 1
-	for i in range(len(Y_hat)): 
-		if Y_pred[i]==Y_hat[i]==0:
+		val_Y_pred_i = Y_pred[i]
+		val_Y_hat_i  = Y_hat[i]
+
+		if val_Y_pred_i==val_Y_hat_i and val_Y_pred_i==1:
+			TP += 1 
+		elif val_Y_pred_i==1 and val_Y_pred_i!=val_Y_hat_i:
+			FP += 1 
+		elif val_Y_pred_i==val_Y_hat_i and val_Y_hat_i==0:
 			TN += 1
-	for i in range(len(Y_hat)): 
-		if Y_pred[i]==0 and Y_pred!=Y_hat[i]:
+		elif val_Y_pred_i==0 and val_Y_pred_i!=val_Y_hat_i:
 			FN += 1
 	return(TP, FP, TN, FN)
 
