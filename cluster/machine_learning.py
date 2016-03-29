@@ -127,10 +127,11 @@ if __name__ ==  "__main__":
 	Y_train = np.zeros(n_train)
 	Y_train[0:int(options.n_samples)] = Y_temp
 
-	i = 1
-
+	i = 0
+	pdb.set_trace()
 	for sample_name in training_names[1::]:
 		try:
+			i += 1
 			image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
 			image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
 			image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
@@ -146,6 +147,7 @@ if __name__ ==  "__main__":
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp
 		except:
 			print sample_name+" was not possible \n"
+
 
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.mtry),
 										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
