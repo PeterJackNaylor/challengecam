@@ -73,7 +73,7 @@ if __name__ ==  "__main__":
 	                  help="Number of the fold in the cross validation", metavar="int")
 	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
 					  help="Number of samples taking from one image",metavar="int")
-	parser.add_option("-ve","--version",dest="version",default="default",
+	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
 	parser.add_option("-t","--n_tree",dest="n_tree",
 					  help="Number of trees for the random Forest",metavar="int")
@@ -88,7 +88,7 @@ if __name__ ==  "__main__":
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	
-	saving_location = os.path.join(options.folder_source, options.version)
+	saving_location = os.path.join(options.folder_source)
 	
 	kfold_file = os.path.join(saving_location,'kfold.txt')
 	f = open(kfold_file,'r')
@@ -102,7 +102,7 @@ if __name__ ==  "__main__":
 	Tumor_slides_test   = from_list_string_to_list_Tumor(all_para[ i*11 + 10],all_para[ i*11 + 9 ])
 
 	training_names = Normal_slides_train + Tumor_slides_train
-
+	pdb.set_trace()
 	sample_name = training_names[0]
 	image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
 	image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
