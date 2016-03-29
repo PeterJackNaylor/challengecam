@@ -102,7 +102,7 @@ if __name__ ==  "__main__":
 	Tumor_slides_test   = from_list_string_to_list_Tumor(all_para[ i*11 + 10],all_para[ i*11 + 9 ])
 
 	training_names = Normal_slides_train + Tumor_slides_train
-
+	pdb.set_trace()
 	sample_name = training_names[0]
 	image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
 	image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
