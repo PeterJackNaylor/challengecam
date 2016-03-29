@@ -86,6 +86,8 @@ if __name__ ==  "__main__":
 					  help="Number of selected instances at each tree",metavar="int")
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
+	parser.add_option("-o","--output",default=".",
+					  help="output folder",metavar="folder")
 
 	(options, args) = parser.parse_args()
 
@@ -93,7 +95,7 @@ if __name__ ==  "__main__":
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	
-	saving_location = os.path.join(options.folder_source)
+	saving_location = os.path.join(options.output)
 	
 	kfold_file = options.kfold_file
 	f = open(kfold_file,'r')
@@ -148,7 +150,7 @@ if __name__ ==  "__main__":
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
 		except:
 			print sample_name+" was not possible \n"
-	pdb.set_trace()
+
 	index_to_keep_X = np.where(X_train.any(axis=1))[0]
 
 	X_train = X_train[index_to_keep_X,:]
@@ -160,7 +162,7 @@ if __name__ ==  "__main__":
 	pdb.set_trace()
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
-		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.mtry+"_boot_"+options.n_bootstrap+".pickle"
+		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 	D = {'TP':0,'FP':0,'TN':0,'FN':0}
 
 	for sample_name in Normal_slides_train+Tumor_slides_test:
@@ -180,6 +182,8 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible \n"
+			pdb.set_trace()
+	pdb.set_trace()
 	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
