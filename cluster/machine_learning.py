@@ -117,7 +117,7 @@ if __name__ ==  "__main__":
 	X_temp = X_temp[index,:]
 	Y_temp = Y_temp[index]
 
-	n_train = len(training_names) * options.n_samples
+	n_train = len(training_names) * int(options.n_samples)
 	p_train = X_temp.shape[1]
 
 
