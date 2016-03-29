@@ -73,7 +73,7 @@ if __name__ ==  "__main__":
 	                  help="Number of the fold in the cross validation", metavar="int")
 	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
 					  help="Number of samples taking from one image",metavar="int")
-	parser.add_option("-ve","--version",dest="version",default="default",
+	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
 	parser.add_option("-t","--n_tree",dest="n_tree",
 					  help="Number of trees for the random Forest",metavar="int")
@@ -88,7 +88,7 @@ if __name__ ==  "__main__":
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	
-	saving_location = os.path.join(options.folder_source, options.version)
+	saving_location = os.path.join(options.folder_source)
 	
 	kfold_file = os.path.join(saving_location,'kfold.txt')
 	f = open(kfold_file,'r')
