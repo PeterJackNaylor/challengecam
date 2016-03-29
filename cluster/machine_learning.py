@@ -11,6 +11,7 @@ Creation date: 2016-02-24
 
 import sys
 
+### This has to be launch from the folder cluster..
 sys.path.append('../RandomForest_Peter/')
 
 import pdb
