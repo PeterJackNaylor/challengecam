@@ -19,11 +19,9 @@ if __name__ ==  "__main__":
 	#### Kfold 
 
 	input_2 = sys.argv[2]
-	#### folder address
+	#### output address
 
 
-	folder_Normal = os.path.join(input_2,'Normal')
-	folder_Tumor  = os.path.join(input_2,'Tumor')
 	file_name = os.path.join(input_2, 'kfold.txt')
 
 	nber_Normal = 160
@@ -32,8 +30,8 @@ if __name__ ==  "__main__":
 	x_normal = np.array(range(1,nber_Normal+1))
 	x_tumor = np.array(range(1,nber_Tumor+1))
 
-	nber_Tumor  = nber_Tumor / input_1
-	nber_Normal = nber_Normal/ input_1
+	nber_Tumor  = nber_Tumor / input_1 * ( input_1 - 1)
+	nber_Normal = nber_Normal/ input_1 * ( input_1 - 1)
 
 	random.shuffle(x_normal)
 	random.shuffle(x_tumor)
