@@ -152,7 +152,7 @@ if __name__ ==  "__main__":
 
 	Y_train = Y_train[index_to_keep_X]
 
-	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.mtry),
+	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
 										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
 	pdb.set_trace()
 	myforest.fit(X_train,Y_train)
