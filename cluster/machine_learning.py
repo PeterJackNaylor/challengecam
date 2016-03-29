@@ -141,8 +141,8 @@ if __name__ ==  "__main__":
 			X_temp = X_temp[index,:]
 			Y_temp = Y_temp[index]
 
-			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = X_temp
-			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp
+			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
+			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = Y_temp[:,:]
 		except:
 			print sample_name+" was not possible \n"
 			pdb.set_trace()

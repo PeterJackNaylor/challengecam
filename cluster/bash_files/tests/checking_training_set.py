@@ -89,7 +89,7 @@ if __name__ ==  "__main__":
 				y = np.load(file_y_npy)
 				y = y[index_to_keep_X,:]
 
-				np.save(file_npy, y)
+				np.save(file_y_npy, y)
 				
 				if X.shape[0] < int(options.seuil):
 					 of.write(slide+" has less then "+options.seuil+" lines \n")
