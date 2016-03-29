@@ -1,10 +1,10 @@
 from __future__ import division
 
-from sklearn.ensemble.forest import six,division,ClassifierMixin, RegressorMixin,Parallel, delayed,_LearntSelectorMixin
-from sklearn.ensemble.forest import r2_score,OneHotEncoder,DecisionTreeClassifier, DecisionTreeRegressor,ExtraTreeClassifier, ExtraTreeRegressor
-from sklearn.ensemble.forest import DTYPE, DOUBLE,check_random_state, check_array, compute_sample_weight
-from sklearn.ensemble.forest import DataConversionWarning, NotFittedError,BaseEnsemble, _partition_estimators,bincount
-from sklearn.ensemble.forest import check_classification_targets
+from sklearn.ensemble.forest import six, division, ClassifierMixin, RegressorMixin, Parallel, delayed, _LearntSelectorMixin
+from sklearn.ensemble.forest import r2_score, OneHotEncoder, DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeClassifier, ExtraTreeRegressor
+from sklearn.ensemble.forest import DTYPE, DOUBLE, check_random_state, check_array, compute_sample_weight
+from sklearn.ensemble.forest import DataConversionWarning, BaseEnsemble, _partition_estimators, bincount
+#from sklearn.ensemble.forest import check_classification_targets
 
 
 import warnings
