@@ -163,6 +163,9 @@ if __name__ ==  "__main__":
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
+		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
+		pickle.dump(myforest, pickle_file)
+
 	D = {'TP':0,'FP':0,'TN':0,'FN':0}
 
 	for sample_name in Normal_slides_train+Tumor_slides_test:
