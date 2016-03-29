@@ -145,13 +145,12 @@ if __name__ ==  "__main__":
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
 		except:
 			print sample_name+" was not possible \n"
-			pdb.set_trace()
 	pdb.set_trace()
 	index_to_keep_X = np.where(X_train.any(axis=1))[0]
 
 	X_train = X_train[index_to_keep_X,:]
 
-	Y_train = Y_train[index_to_keep_X,:]
+	Y_train = Y_train[index_to_keep_X]
 
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.mtry),
 										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
