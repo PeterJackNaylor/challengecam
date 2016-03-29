@@ -63,9 +63,9 @@ if __name__ ==  "__main__":
 	for pref in ["Tumor","Normal"]:
 
 		if "Tumor"==pref:
-			n_range = 110
+			n_range = 11#0
 		else:
-			n_range = 160
+			n_range = 16#0
 
 		for i in range(1,n_range+1):
 			
