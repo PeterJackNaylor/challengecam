@@ -94,8 +94,8 @@ if __name__ ==  "__main__":
 
 	version_para = { 'n_sub': int(options.n_samples) }
 
-	
-	saving_location = os.path.join(options.output)
+	data_location   = options.folder_source
+	saving_location = options.output
 	
 	kfold_file = options.kfold_file
 	f = open(kfold_file,'r')
@@ -110,9 +110,9 @@ if __name__ ==  "__main__":
 
 	training_names = Normal_slides_train + Tumor_slides_train
 	sample_name = training_names[0]
-	image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
-	image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
-	image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
+	image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
+	image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
+	image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
 
 	X_temp = np.load( image_sauv_name_npy )
 	Y_temp = np.load( image_sauv_name_y_npy ).ravel()
@@ -135,9 +135,9 @@ if __name__ ==  "__main__":
 	for sample_name in training_names[1::]:
 		try:
 			i += 1
-			image_sauv_name_pickle = os.path.join(saving_location ,sample_name, sample_name  + ".pickle")
-			image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
-			image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
+			image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
+			image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
+			image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
 
 			X_temp = np.load( image_sauv_name_npy )
 			Y_temp = np.load( image_sauv_name_y_npy ).ravel()
@@ -167,8 +167,8 @@ if __name__ ==  "__main__":
 
 	for sample_name in Normal_slides_train+Tumor_slides_test:
 		try:
-			image_sauv_name_npy    = os.path.join(saving_location ,sample_name, sample_name  + ".npy")
-			image_sauv_name_y_npy  = os.path.join(saving_location ,sample_name, sample_name  + "_y_.npy")
+			image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
+			image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
 
 			X_pred = np.load( image_sauv_name_npy )
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
