@@ -99,6 +99,8 @@ if __name__ ==  "__main__":
 						n_ones += s
 				except:
 					pass
-	
+					ttttttt = 1
+			except:
+				of.write("Problems with "+slide+"\n")
 	of.write("Their is %d lines \n" % n_lines)
 	of.write("Their is %d ones \n" % n_ones)
