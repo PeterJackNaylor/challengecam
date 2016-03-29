@@ -505,7 +505,6 @@ def subsample(Y,version,version_para):
     n = len(Y)
     val, freq = np.unique(Y, return_counts=True )
     iter_obj = [(val[i],freq[i]) for i in range(len(val))]
-    pdb.set_trace()
     if version == 'default':
         ## this is a purely random susampling
         ## checking for right arguments
