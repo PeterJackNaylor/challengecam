@@ -29,8 +29,8 @@ if __name__ ==  "__main__":
 	nber_Normal = 160
 	nber_Tumor  =  110
 
-	x_normal = np.array(range(nber_Normal))
-	x_tumor = np.array(range(nber_Tumor))
+	x_normal = np.array(range(1,nber_Normal+1))
+	x_tumor = np.array(range(1,nber_Tumor+1))
 
 	nber_Tumor  = nber_Tumor / input_1
 	nber_Normal = nber_Normal/ input_1

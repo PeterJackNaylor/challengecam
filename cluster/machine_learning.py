@@ -10,6 +10,7 @@ Creation date: 2016-02-24
 """
 
 import sys
+import time
 
 ### This has to be launch from the folder cluster..
 sys.path.append('../RandomForest_Peter/')
@@ -103,6 +104,8 @@ if __name__ ==  "__main__":
 	
 	i = int(options.k_folds) ## fold number
 
+	start_time = time.time()
+
 	Normal_slides_train = from_list_string_to_list_Tumor(all_para[ i*11 + 3 ],all_para[ i*11 + 2 ])
 	Tumor_slides_train  = from_list_string_to_list_Tumor(all_para[ i*11 + 5 ],all_para[ i*11 + 4 ])
 	Normal_slides_test  = from_list_string_to_list_Tumor(all_para[ i*11 + 8 ],all_para[ i*11 + 7 ])
@@ -156,19 +159,29 @@ if __name__ ==  "__main__":
 	X_train = X_train[index_to_keep_X,:]
 
 	Y_train = Y_train[index_to_keep_X]
+	
+	diff_time = time.time() - start_time
+	print 'Setting up X_train:'
+	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
 
+	start_time = time.time()
+	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
 										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
-	pdb.set_trace()
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 
+	diff_time = time.time() - start_time
+	print 'Training:'
+	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
+	
+	start_time = time.time()
 
 	D = {'TP':0,'FP':0,'TN':0,'FN':0}
 
-	for sample_name in Normal_slides_train+Tumor_slides_test:
+	for sample_name in Normal_slides_test+Tumor_slides_test:
 		try:
 			image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
 			image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
@@ -185,11 +198,14 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible \n"
-			pdb.set_trace()
-	pdb.set_trace()
 	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
+
 
 	im_pickle = open(image_sauv_name_score,  'w')
 
 	pickle.dump(image_sauv_name_score, D)
+	
+	diff_time = time.time() - start_time
+	print 'Prediction time:'
+	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
