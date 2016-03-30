@@ -101,10 +101,10 @@ if __name__ ==  "__main__":
 	print "subsampling: |"+options.version
 	print "n_tree:      |"+options.n_tree
 	print "m_try:       |"+options.m_try
-	print "bootstrap:   |"+options.bootstrap
+	print "bootstrap:   |"+options.n_bootstrap
 	print "save folder: |"+options.save
 	print "output folde:|"+options.output
-	print "n_jobs:      |"+options.n_jobs
+	print "n_jobs:      |"+options.n_jobs 
 
 
 	version_para = { 'n_sub': int(options.n_samples) }
