@@ -5,7 +5,7 @@
 #$ -N Training_RF # name of the job as it will appear in qstat -f
 #$ -o /cbio/donnees/pnaylor/PBS/OUT
 #$ -e /cbio/donnees/pnaylor/PBS/ERR
-#$ -l nodes=1:ppn=2,h_vmem=4G
+#$ -l nodes=1:ppn=4,h_vmem=4G
 
 
 ## others optional options
@@ -31,4 +31,4 @@ FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
 FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 
 
-python $CAM16/scripts/challengecam/cluster/machine_learning.py --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $VERSION --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 0 --output $OUTPUT --n_jobs 2
+python $CAM16/scripts/challengecam/cluster/machine_learning.py --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $VERSION --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 0 --output $OUTPUT --n_jobs 4
