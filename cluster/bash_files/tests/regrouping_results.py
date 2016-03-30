@@ -19,21 +19,24 @@ if __name__ ==  "__main__":
 
 	(options, args) = parser.parse_args()
 
-	source_folder = os.path.join(options.folder_source, "classifier_*.pickle")
+	source_folder = os.path.join(options.folder_source, "score_*.pickle")
 
 	data = pd.DataFrame(columns=('Fold','N_tree','m_try','n_bootstrap','TP','TN','FP','FN'))
 
 	files = glob.glob(source_folder)
 	i=0
 	for fn in files:
-		D = pkl.load(open(fn,'rb'))
-		para = fn.split('.')[0].split('/')[-1].split('_')[1::]
-		Fold = para[1]
-		N_tree = para[3]
-		m_try = para[5]
-		n_bootstrap = para[7]
-		values = [Fold, N_tree, m_try, n_bootstrap, D['TP'], D['TN'], D['FP'], D['FN']]
-		data.loc[i] = values		
-		i += 1
+		try:
+			D = pkl.load(open(fn,'rb'))
+			para = fn.split('.')[0].split('/')[-1].split('_')[1::]
+			Fold = para[1]
+			N_tree = para[3]
+			m_try = para[5]
+			n_bootstrap = para[7]
+			values = [Fold, N_tree, m_try, n_bootstrap, D['TP'], D['TN'], D['FP'], D['FN']]
+			data.loc[i] = values		
+			i += 1
+		except:
+			print fn.split('/')[-1] + ' is corrupted'
 	pdb.set_trace()
 
