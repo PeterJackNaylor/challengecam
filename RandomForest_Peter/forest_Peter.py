@@ -17,6 +17,8 @@ from scipy.sparse import issparse
 
 MAX_INT = np.iinfo(np.int32).max
 
+import pdb
+
 __all__=["PeterRandomForestClassifier"]
 
 ###################################### Peter's modification 
@@ -25,6 +27,7 @@ def _generate_sample_indices_Peter(random_state, n_samples,n_bootstrap=None):
     
     """Private function used to _parallel_build_trees function."""
     random_instance = check_random_state(random_state)
+    pdb.set_trace()
     if n_bootstrap is None:
         sample_indices = random_instance.randint(0, n_samples, n_samples)
     else:
@@ -53,7 +56,7 @@ def _parallel_build_trees_Peter(tree, forest, X, y, sample_weight, tree_idx, n_t
             curr_sample_weight = np.ones((n_samples,), dtype=np.float64)
         else:
             curr_sample_weight = sample_weight.copy()
-
+        pdb.set_trace()
         indices = _generate_sample_indices_Peter(tree.random_state, n_samples, n_bootstrap)
         sample_counts = bincount(indices, minlength=n_samples)
         curr_sample_weight *= sample_counts
