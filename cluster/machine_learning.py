@@ -172,8 +172,11 @@ if __name__ ==  "__main__":
 	X_train = X_train[index_to_keep_X,:]
 
 	Y_train = Y_train[index_to_keep_X]
-	
+
+	Y_train[Y_train>0]=1
+
 	diff_time = time.time() - start_time
+
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
 	print 'With dim X_train = %d, %d' %X_train.shape
