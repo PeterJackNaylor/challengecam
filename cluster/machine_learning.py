@@ -177,7 +177,7 @@ if __name__ ==  "__main__":
 	diff_time = time.time() - start_time
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-	print 'With dim X = %d, %d' %X.shape
+	print 'With dim X_train = %d, %d' %X_train.shape
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
