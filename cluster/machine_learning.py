@@ -102,7 +102,7 @@ if __name__ ==  "__main__":
 	print "n_tree:      |"+options.n_tree
 	print "m_try:       |"+options.m_try
 	print "bootstrap:   |"+options.n_bootstrap
-	print "save folder: |"+options.save
+	print "saving:      |"+options.save
 	print "output folde:|"+options.output
 	print "n_jobs:      |"+options.n_jobs 
 
@@ -221,7 +221,7 @@ if __name__ ==  "__main__":
 
 	im_pickle = open(image_sauv_name_score,  'wb')
 
-	pickle.dump(D, image_sauv_name_score)
+	pickle.dump(D, im_pickle)
 	
 	diff_time = time.time() - start_time
 	print 'Prediction time:'
