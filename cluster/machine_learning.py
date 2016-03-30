@@ -89,7 +89,8 @@ if __name__ ==  "__main__":
 					  help="booleen to save, 0: True 1: False", metavar="bool")
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
-
+	parser.add_option("--n_jobs",default="1",dest="n_jobs",
+					  help="number of jobs to pass to randomforest",metavar="int")
 	(options, args) = parser.parse_args()
 
 
@@ -168,7 +169,8 @@ if __name__ ==  "__main__":
 	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
 										   max_depth = None, class_weight="balanced",
-										   n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
+										   n_bootstrap = int(options.n_bootstrap) ,
+										   n_jobs= int(options.n_jobs)) ## penser a changer bootstrap
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
