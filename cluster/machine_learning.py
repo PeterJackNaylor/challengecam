@@ -87,7 +87,7 @@ if __name__ ==  "__main__":
 					  help="Number of selected instances at each tree",metavar="int")
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
-	parser.add_option("-o","--output",default=".",
+	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
 
 	(options, args) = parser.parse_args()
@@ -167,7 +167,8 @@ if __name__ ==  "__main__":
 	start_time = time.time()
 	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
-										   max_depth = None, n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
+										   max_depth = None, class_weight="balanced",
+										   n_bootstrap = int(options.n_bootstrap) ) ## penser a changer bootstrap
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
