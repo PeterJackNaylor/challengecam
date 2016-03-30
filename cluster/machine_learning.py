@@ -75,7 +75,7 @@ if __name__ ==  "__main__":
 					  help="where to find the kfold file",metavar="FILE")
 	parser.add_option("-k", "--fold", dest="k_folds",
 	                  help="Number of the fold in the cross validation", metavar="int")
-	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
+	parser.add_option("-n","--n_samples", dest="n_samples",default="1000",
 					  help="Number of samples taking from one image",metavar="int")
 	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
