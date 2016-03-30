@@ -5,7 +5,7 @@
 #$ -N Training_RF # name of the job as it will appear in qstat -f
 #$ -o /cbio/donnees/pnaylor/PBS/OUT
 #$ -e /cbio/donnees/pnaylor/PBS/ERR
-#$ -l nodes=1:ppn=4,h_vmem=4G
+#$ -l h_vmem=4G
 
 
 ## others optional options
@@ -20,6 +20,7 @@ KFOLD=/share/data40T_v2/challengecam_results/training/kfold.txt
 VERSION=default
 OUTPUT=/share/data40T_v2/challengecam_results/training/
 spe_tag=__
+PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_learning.py
 source $HOME/.bash_profile
 
 FILE=/share/data40T_v2/challengecam_results/settings_for_machine_learning.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
@@ -31,4 +32,4 @@ FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
 FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 
 
-python $CAM16/scripts/challengecam/cluster/machine_learning.py --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $VERSION --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 0 --output $OUTPUT --n_jobs 4
+python PYTHON_FILE $CAM16/ --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $VERSION --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 0 --output $OUTPUT --n_jobs 1
