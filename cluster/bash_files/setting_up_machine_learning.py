@@ -23,7 +23,7 @@ n_bootstrap = [ 500, 1000, 2000, 5000 ]
 
 
 if __name__ ==  "__main__":
-	git pullparser = OptionParser()
+	parser = OptionParser()
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
 
