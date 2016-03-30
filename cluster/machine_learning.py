@@ -209,6 +209,7 @@ if __name__ ==  "__main__":
 
 			X_pred = np.load( image_sauv_name_npy )
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
+			Y_pred[Y_pred>0] = 1
 
 			Y_hat = myforest.predict(X_pred)
 			#Y_hat_prob = myforest.predict_proba(X_pred)
@@ -219,7 +220,7 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible"
-	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
+	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 
