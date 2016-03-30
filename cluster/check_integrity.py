@@ -44,15 +44,14 @@ def check_integrity(in_folder, res, export_filename=None):
             if not slide_number in found:
                 found[slide_number] = []
             
-            found[slide_number].append(os.path.split(image_name)[0])
+            found[slide_number].append(os.path.splitext(image_name)[0])
 
     #pdb.set_trace()
     not_processed = {}
     for sn in res.keys():
         image_list = res[sn]
         not_processed[sn] = []
-        for image in image_list:
-	    pdb.set_trace()
+        for image, job_id in image_list:
             if not image in found[sn]:
                 not_processed[sn].append(image)
     
@@ -60,7 +59,7 @@ def check_integrity(in_folder, res, export_filename=None):
 	i = 1
 	fp = open(export_filename, 'w')
         for sn in not_processed.keys():
-            for filename, job_id in not_processed[sn]:
+            for filename in not_processed[sn]:
                  entries = filename.split('_')
 		 #Test_001_39216_54032_948_1076
 		 #__0__ Test 1 60136 5096 294 326 2
@@ -96,7 +95,8 @@ if __name__ ==  "__main__":
     #pdb.set_trace()    
     not_processed = check_integrity(options.input_folder, res, options.export_filename)
     for sn in not_processed:
-        print '%s\t%s\t%s' % (sn, not_processed[sn][0], not_processed[sn][1])
+        print '%s\t%s' % (sn, not_processed[sn])
+	print
         
     print 'DONE!'
     
