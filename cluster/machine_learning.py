@@ -13,7 +13,7 @@ import sys
 import time
 
 ### This has to be launch from the folder cluster..
-sys.path.append('/share/data40T/pnaylor/Cam16/script/challengecam/RandomForest_Peter/')
+sys.path.append('/share/data40T/pnaylor/Cam16/scripts/challengecam/RandomForest_Peter/')
 
 import pdb
 import os
