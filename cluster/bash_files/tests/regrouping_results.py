@@ -20,8 +20,8 @@ if __name__ ==  "__main__":
 	(options, args) = parser.parse_args()
 
 	source_folder = os.path.join(options.folder_source, "score_*.pickle")
-
-	data = pd.DataFrame(columns=('Fold','N_tree','m_try','n_bootstrap','TP','TN','FP','FN'))
+#	output_folder 
+	data = pd.DataFrame(columns=('Fold','N_tree','m_try','n_bootstrap', 'n_samples', 'TP', 'TN', 'FP', 'FN'))
 
 	files = glob.glob(source_folder)
 	i=0
@@ -33,7 +33,8 @@ if __name__ ==  "__main__":
 			N_tree = para[3]
 			m_try = para[5]
 			n_bootstrap = para[7]
-			values = [Fold, N_tree, m_try, n_bootstrap, D['TP'], D['TN'], D['FP'], D['FN']]
+			n_samples = para[9]
+			values = [Fold, N_tree, m_try, n_bootstrap, n_samples, D['TP'], D['TN'], D['FP'], D['FN']]
 			data.loc[i] = values		
 			i += 1
 		except:
@@ -44,7 +45,7 @@ if __name__ ==  "__main__":
 	data['F1']        = 2 * data['Precision'] * data['Recall'] / (data['Precision'] + data['Recall'])
 	data['Accuracy']  = (data['TP'] + data['FP']) / (data['TP'] + data['FP'] + data['TN'] + data['FN'])
 
-
+	groups = data.groupby(['N_tree','m_try','n_bootstrap', 'n_samples'])
 
 
 	pdb.set_trace()
