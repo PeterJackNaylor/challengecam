@@ -188,7 +188,7 @@ if __name__ ==  "__main__":
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
-
+		pickle.dump(myforest, pickle_file)
 	diff_time = time.time() - start_time
 	print 'Training:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
@@ -218,9 +218,9 @@ if __name__ ==  "__main__":
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 
-	im_pickle = open(image_sauv_name_score,  'w')
+	im_pickle = open(image_sauv_name_score,  'wb')
 
-	pickle.dump(image_sauv_name_score, D)
+	pickle.dump(D, image_sauv_name_score)
 	
 	diff_time = time.time() - start_time
 	print 'Prediction time:'
