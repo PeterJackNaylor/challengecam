@@ -19,7 +19,6 @@ import pdb
 import os
 
 from getpass import getuser
-import smilPython as sp
 import numpy as np
 
 import folder_functions as ff
@@ -65,7 +64,7 @@ def Score(Y_pred,Y_hat):
 
 if __name__ ==  "__main__":
 
-	from cluster_parameters import *
+	#from cluster_parameters import *
 
 	### inputs and folder reads
 	parser = OptionParser()
