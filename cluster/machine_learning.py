@@ -166,7 +166,7 @@ if __name__ ==  "__main__":
 			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
 		except:
-			print sample_name+" was not possible \n"
+			print sample_name+" was not possible"
 
 	index_to_keep_X = np.where(X_train.any(axis=1))[0]
 
@@ -177,7 +177,8 @@ if __name__ ==  "__main__":
 	diff_time = time.time() - start_time
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-
+	print 'With dim X = %d, %d' %X.shape
+	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
@@ -213,7 +214,7 @@ if __name__ ==  "__main__":
 			D['TN'] += TN
 			D['FN'] += FN
 		except:
-			print sample_name+" was not possible \n"
+			print sample_name+" was not possible"
 	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
