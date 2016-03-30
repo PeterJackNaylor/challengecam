@@ -59,6 +59,8 @@ def Score(Y_pred,Y_hat):
 			TN += 1
 		elif val_Y_pred_i==0 and val_Y_pred_i!=val_Y_hat_i:
 			FN += 1
+		else:
+			print val_Y_pred_i, val_Y_hat_i
 	return(TP, FP, TN, FN)
 
 
