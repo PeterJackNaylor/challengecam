@@ -38,5 +38,12 @@ if __name__ ==  "__main__":
 			i += 1
 		except:
 			print fn.split('/')[-1] + ' is corrupted'
+
+	data['Precision'] = data['TP'] / (data['TP'] + data['FP'])
+	data['Recall']    = data['TP'] / (data['TP'] + data['FN'])
+	data['F1']        = 2 * data['Precision'] * data['Recall'] / (data['Precision'] + data['Recall'])
+	data['Accuracy']  = (data['TP'] + data['FP'])
+
+
 	pdb.set_trace()
 

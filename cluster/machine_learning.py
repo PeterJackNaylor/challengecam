@@ -181,7 +181,7 @@ if __name__ ==  "__main__":
 	start_time = time.time()
 	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
-										   max_depth = None, class_weight="balanced",
+										   max_depth = None, class_weight="balanced_subsample",
 										   n_bootstrap = int(options.n_bootstrap) ,
 										   n_jobs= int(options.n_jobs)) ## penser a changer bootstrap
 	myforest.fit(X_train,Y_train)
@@ -206,7 +206,7 @@ if __name__ ==  "__main__":
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
 
 			Y_hat = myforest.predict(X_pred)
-			Y_hat_prob = myforest.predict_proba(X_pred)
+			#Y_hat_prob = myforest.predict_proba(X_pred)
 			TP, FP, TN, FN = Score(Y_pred,Y_hat)
 			D['TP'] += TP
 			D['FP'] += FP
