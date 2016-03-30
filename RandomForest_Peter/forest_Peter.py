@@ -42,10 +42,10 @@ def _generate_sample_indices_Peter(random_state, n_samples,n_bootstrap=None , y=
             yyy = list(sample_indices_y_1)
             random.shuffle(xxx)
             random.shuffle(yyy)
-            sample_indices_y_0 = xxx[0:(n_bootstrap/2)]
-            sample_indices_y_1 = yyy[0:(n_bootstrap/2)]
+            sample_indices_y_0 = np.array(xxx)[0:(n_bootstrap/2)]
+            sample_indices_y_1 = np.array(yyy)[0:(n_bootstrap/2)]
 
-            sample_indices = np.array( sample_indices_y_0 + sample_indices_y_1 )
+            sample_indices = np.array( list(sample_indices_y_0) + list(sample_indices_y_1) )
             random.shuffle(sample_indices)
     return sample_indices
     
