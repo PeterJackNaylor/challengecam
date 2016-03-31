@@ -1,0 +1,253 @@
+import os, sys, time, re
+
+from numpy import np
+import skimage.io
+
+import cPickle as pickle
+
+from optparse import OptionParser
+
+class ImagePredictor(object):
+    def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
+        
+        self.classifier_name = classifier_name
+        self.classifier = self.read_classifier()
+        self.feature_folder = feature_folder
+        self.output_folder = output_folder
+        self.img_orig_folder = img_orig_folder
+
+        self.map_resolution_level = 4
+        self.resolution_level = 2
+        
+    def read_classifier(self):
+        fp = open(self.classifier_name, 'r')
+        predictor = pickle.load(fp)
+        fp.close()
+        return predictor
+    
+    def read_data(self, data_filename):
+        X = np.load(data_filename)
+        return X 
+    
+    def __call__(self, slidename, write_crop=False, subsample=None, upper_limit=None):
+        
+        # features
+        slide_folder = os.path.join(self.feature_folder, slidename)
+        feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
+                               os.listdir(slide_folder))
+
+        crop_output_folder = os.path.join(self.output_folder, 'crops', slidename)
+        if not os.path.isdir(crop_output_folder):
+            os.makedirs(crop_output_folder)
+
+        if upper_limit is None:
+            upper_limit = len(feature_files)
+ 
+        for feature_file in feature_files[:upper_limit]:
+            start_time = time.time()
+            print 'processing %s' % os.path.splitext(os.path.basename(feature_file))
+            
+            img = self.process_file(feature_file, subsample)
+            img_filename = 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))
+            skimage.io.imsave(os.path.join(slide_folder, img_filename), img)
+            
+            difftime = time.time() - start_time
+            ms = (difftime - np.int(difftime)) * 1000
+            print '\t time elapsed: %02i:%02i:03i' % ( (difftime / 60), (difftime%60), ms)
+            
+        # slide 
+        # This would be /share/data40T/pnaylor/Cam16/Test/
+        #slide_filename = os.path.join(self.img_orig_folder, '%s.tif' % slidename)
+        #slide = openslide.open_slide(slide_filename)
+        #slide_dimensions = slide.level_dimensions
+        #slide_factors = slide.level_downsamples
+        #slide.close()
+        
+        # shape of the slide at resolution level 0
+        #w0 = slide_dimensions[0][0]
+        #h0 = slide_dimensions[0][1]
+        
+
+        return
+    
+    def process_file(self, data_filename, subsample=None):
+
+        info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
+        x = info[1]
+        y = info[2]
+        width = info[3]
+        height = info[4]
+
+        X = self.read_data(data_filename)
+        if subsample is None:
+            probs = self.classifier.predict_proba(X)                    
+        else:
+            N = X.shape[0]
+            indices = np.arange(0, N, step=subsample)
+            Xs = X[indices,:]
+            Ys = self.classifier.predict_proba(Xs)
+            small_indices = np.range(len(Ys))
+            
+            # repeats the indices [0, 1, 2] -> [0, 0, 1, 1, 2, 2]
+            # this corresponds to an upscaling of small_indices.             
+            large_indices = np.repeat(small_indices, subsample)
+            probs = Ys[large_indices]
+
+        img = probs.reshape((width, height))
+        
+        return img
+    
+    def _deprecated_process_slide(self, slidename, write_crops=False):
+        
+        # features
+        slide_folder = os.path.join(self.feature_folder, slidename)
+        feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
+                               os.listdir(slide_folder))
+
+        # output
+        whole_slide_output_folder = os.path.join(self.output_folder, 'whole_slide', slidename)
+        if not os.path.isdir(whole_slide_output_folder):
+            os.makedirs(whole_slide_output_folder)
+
+        crop_output_folder = os.path.join(self.output_folder, 'crops', slidename)
+        if not os.path.isdir(crop_output_folder):
+            os.makedirs(crop_output_folder)
+            
+        # slide 
+        # This would be /share/data40T/pnaylor/Cam16/Test/
+        slide_filename = os.path.join(self.img_orig_folder, '%s.tif' % slidename)
+        slide = openslide.open_slide(slide_filename)
+        slide_dimensions = slide.level_dimensions
+        slide_factors = slide.level_downsamples
+        slide.close()
+        
+        # shape of the slide at resolution level 0
+        w0 = slide_dimensions[0][0]
+        h0 = slide_dimensions[0][1]
+        
+        res = []
+        for feature_file in feature_files:
+            info = os.path.splitext(feature_file)[0].split('_')
+            x = info[1]
+            y = info[2]
+            width = info[3]
+            height = info[4]
+            
+            full_filename = os.path.join(slide_folder, feature_file)
+            img = self.process_file(full_filename, width, height)
+            
+            img_small = skimage.transform.downscale_local_mean(img, np.ones(len(img.shape)) * self.factor)
+            res.append({
+                        'img': img_small,
+                        'x': x,
+                        'y': y,
+                        'x0': x * slide_factors[self.resolution_level],
+                        'y0': y * slide_factors[self.resolution_level],                        
+                        })
+            
+            if write_crops:
+                img_name = os.path.join(crop_output_folder, 'prob_map_%s.png' + os.path.splitext(fulle_filename)[0])
+                skimage.io.imsave(img_name, img)
+        
+        # reconstruct the entire image
+        width = slide_dimensions[self.map_resolution_level][0]
+        height= slide_dimensions[self.map_resolution_level][1]
+        img_rec = np.zeros( shape = (width , height) ) 
+        coverage = np.zeros( shape = (width , height) ) 
+
+#        for crop in res:
+#            # to do: loop over crops. 
+#            print res['x']
+            
+        return
+
+# def get_X_Y_from_0(slide,x_1,y_1,level):
+#     ## Gives you the coordinates for the level 'level' image for a given couple of pixel from resolution 0
+# 
+#     size_x_0=slide.level_dimensions[level][0]
+#     size_y_0=slide.level_dimensions[level][1]
+#     size_x_1=float(slide.level_dimensions[0][0])
+#     size_y_1=float(slide.level_dimensions[0][1])
+#   
+#     x_0=x_1*size_x_0/size_x_1
+#     y_0=y_1*size_y_0/size_y_1
+#   
+#     return int(x_0),int(y_0)
+# 
+# def predict_WSI(slide,training_res,pred_WSI_res,classifier_vaia):
+#     if slide is str:
+#         slide = openslide.open_slide(slide)
+# 
+#     ROI_para = ROI(name,ref_level=training_res, disk_size=4, thresh=None, black_spots=None,
+#                    number_of_pixels_max=1000000, verbose=False, marge=0.5, method='grid_etienne')
+#     WSI_pred=np.zeros(shape=(slide.level_dimensions[pred_WSI_res][0],slide.level_dimensions[pred_WSI_res][1],2))
+#     for para in ROI_para:
+#         sub_image = slide.read_region((para[0],para[1]),para[4],(para[2],para[3]))
+#         ### prediction  ###
+# 
+#         image_pred 
+#         to_insert = change_res_np(image_pred)
+#         x0, y0 = get_X_Y_from_0(slide,para[0],para[1],pred_WSI_res) 
+#         size_x,size_y = get_size(slide, para[2], para[3], training_res, pred_WSI_res)
+#         WSI_pred[x0:(x0+size_x),y0:(y0+size_y),0] += to_insert[0:size_x,0:size_y]  ###we maybe have to invert x and y
+#         WSI_pred[x0:(x0+size_x),y0:(y0+size_y),0] += 1
+# 
+#     zeros = np.where(WSI_pred[:,:,1]==0)
+#     WSI_pred[zeros,0] = WSI_pred[zeros,0] / WSI_pred[zeros,1]
+# 
+#     return(WSI_pred[:,:,0])
+# 
+# 
+# class FullImagePredictor(object):
+#     def __init__(self, image_predictor, 
+#                  feature_folder):
+#         self.image_predictor = image_predictor
+#         self.feature_folder = feature_folder
+#         
+#         # typically for prediction
+#         # feature_folder: /share/data40T_v2/challengecam_results/Pred_data_set
+#         
+#                 
+    
+if __name__ ==  "__main__":
+
+    parser = OptionParser()
+
+    parser.add_option("--classifier_name", dest="classifier_name",
+                      help="classifier pickle file")
+    parser.add_option("--feature_folder", dest="feature_folder",
+                      help="feature folder")
+    parser.add_option("--output_folder", dest="output_folder",
+                      help="output folder")
+    parser.add_option("--subsample_factor", dest="subsample_factor",
+                      help="subsample factor")
+    parser.add_option("--upper_limit", dest="upper_limit",
+                      help="maximal number of crops to be analyzed (mainly for debugging)")
+    
+    (options, args) = parser.parse_args()
+
+    if options.classifier_name is None or options.feature_folder is None or options.output_folder is None or options.slide_name:
+        raise ValueError("slide name, classifier name, feature folder and output folder need to be specified.")
+
+    
+    if not options.subsample_factor is None:
+        subsample_factor = int(options.subsample_factor)
+    else:
+        subsample_factor = options.subsample_factor
+        
+    if not options.upper_limit is None:
+        upper_limit = int(options.upper_limit)
+    else:
+        upper_limit = options.upper_limit
+        
+    IP = ImagePredictor(options.classifier_name,
+                        options.feature_folder,
+                        options.output_folder)
+    
+    IP(options.slide_name, subsampling=subsample_factor,
+       upper_limit=upper_limit)
+    
+    print 'DONE !'
+    
+    
+        
