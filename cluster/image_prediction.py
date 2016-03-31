@@ -1,11 +1,13 @@
 import os, sys, time, re
 
-from numpy import np
+import numpy as np
 import skimage.io
 
 import cPickle as pickle
 
 from optparse import OptionParser
+
+import pdb
 
 class ImagePredictor(object):
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
@@ -45,11 +47,11 @@ class ImagePredictor(object):
  
         for feature_file in feature_files[:upper_limit]:
             start_time = time.time()
-            print 'processing %s' % os.path.splitext(os.path.basename(feature_file))
+            print 'processing %s' % os.path.splitext(os.path.basename(feature_file))[0]
             
-            img = self.process_file(feature_file, subsample)
-            img_filename = 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))
-            skimage.io.imsave(os.path.join(slide_folder, img_filename), img)
+            img = self.process_file(os.path.join(slide_folder, feature_file), subsample)
+            img_filename = 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))[0]
+            skimage.io.imsave(os.path.join(crop_output_folder, img_filename), img)
             
             difftime = time.time() - start_time
             ms = (difftime - np.int(difftime)) * 1000
@@ -223,10 +225,12 @@ if __name__ ==  "__main__":
                       help="subsample factor")
     parser.add_option("--upper_limit", dest="upper_limit",
                       help="maximal number of crops to be analyzed (mainly for debugging)")
+    parser.add_option("--slide_name", dest="slide_name",
+                      help="name of the slide (without extension)")
     
     (options, args) = parser.parse_args()
 
-    if options.classifier_name is None or options.feature_folder is None or options.output_folder is None or options.slide_name:
+    if (options.classifier_name is None) or (options.feature_folder is None) or (options.output_folder is None) or (options.slide_name is None):
         raise ValueError("slide name, classifier name, feature folder and output folder need to be specified.")
 
     
@@ -244,7 +248,7 @@ if __name__ ==  "__main__":
                         options.feature_folder,
                         options.output_folder)
     
-    IP(options.slide_name, subsampling=subsample_factor,
+    IP(options.slide_name, subsample=subsample_factor,
        upper_limit=upper_limit)
     
     print 'DONE !'
