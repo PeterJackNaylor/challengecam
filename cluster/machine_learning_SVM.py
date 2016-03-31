@@ -68,37 +68,46 @@ if __name__ ==  "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--source", dest="folder_source",
 	                  help="Where to find Tumor files", metavar="FILE")
+	print "source file: |"+options.folder_source
+
 	parser.add_option("-f","--kfold_file",dest="kfold_file",
 					  help="where to find the kfold file",metavar="FILE")
+	print "kfold file:  |"+options.kfold_file
 	parser.add_option("-k", "--fold", dest="k_folds",
 	                  help="Number of the fold in the cross validation", metavar="int")
+	print "fold number: |"+options.k_folds
 	parser.add_option("-n","--n_samples", dest="n_samples",default="1000",
 					  help="Number of samples taking from one image",metavar="int")
+	print "n_samples:   |"+options.n_samples
 	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
+	print "version:     |"+options.version
 	parser.add_option("--norm1",dest="norm1",default="0",
 					  help="Normalization scheme slide by slide",metavar="int")
-
+	print "norm1:       |"+options.norm1
 	parser.add_option("-c","--penalty",dest="c",
 					  help="value of the penalty in the SVM",metavar="int")
-
+	print "C:           |"+options.c
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
+	print "saving:      |"+options.save
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
-	(options, args) = parser.parse_args()
-
-
-	print "source file: |"+options.folder_source
-	print "kfold file:  |"+options.kfold_file
-	print "fold number: |"+options.k_folds
-	print "C:           |"+options.c
-	print "saving:      |"+options.save
 	print "output folde:|"+options.output
-	print "n_jobs:      |"+options.n_jobs 
+	parser.add_option("--kmean_k",default="0",dest="kmean_k",
+					  help="number of clusters of the k mean",metavar="int > 0 ")
+	print "kmeans k    :|"+options.kmean_k
+	parser.add_option("--kmean_n",dest="kmean_n",
+					  help="downsampling number with the k mean algorithm",metavar="int")
+	print "kmean downsa:|"+options.kmean_n
+	
 
-
+	(options, args) = parser.parse_args()
+	
 	version_para = { 'n_sub': int(options.n_samples) }
+
+	if int(options.kmean_k) != 0:
+		para_kmean = { 'n_sub':int(options.kmean_n), 'k':int(options.kmean_k)} 
 
 	data_location   = options.folder_source
 	saving_location = options.output
@@ -125,19 +134,27 @@ if __name__ ==  "__main__":
 	X_temp = np.load( image_sauv_name_npy )
 	Y_temp = np.load( image_sauv_name_y_npy ).ravel()
 	index = subsample(Y_temp, options.version, version_para)
-
+	if int(options.norm1) == 0:
+		X_temp = StandardScaler().fit_transform(X_temp)
 	X_temp = X_temp[index,:]
 	Y_temp = Y_temp[index]
-
-	n_train = len(training_names) * int(options.n_samples)
+	if int(options.kmean_k) != 0:
+		para_kmean['X'] = X_temp
+		index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
+		X_temp = X_temp[index_kmean,:]
+		Y_temp = Y_temp[index_kmean]
+	
+	step = int(options.kmean_k) * int(options.kmean_n)
+	n_train = len(training_names) * step
 	p_train = X_temp.shape[1]
 
 
 	X_train = np.zeros(shape=(n_train, p_train))
-	X_train[0:int(options.n_samples),:] = X_temp
+	n_temp = X_temp.shape[0]
+	X_train[0:n_temp,:] = X_temp
 
 	Y_train = np.zeros(n_train)
-	Y_train[0:int(options.n_samples)] = Y_temp
+	Y_train[0:n_temp] = Y_temp
 
 	i = 0
 	for sample_name in training_names[1::]:
@@ -155,9 +172,14 @@ if __name__ ==  "__main__":
 			Y_temp = Y_temp[index]
 			if int(options.norm1) == 0:
 				X_temp = StandardScaler().fit_transform(X_temp)
-
-			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
-			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
+			if int(options.kmean_k) != 0:
+				para_kmean['X'] = X_temp
+				index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
+				X_temp = X_temp[index_kmean,:]
+				Y_temp = Y_temp[index_kmean]
+			n_temp = X_temp.shape[0]
+			X_train[ i * step : i * step + n_temp,: ] = X_temp[:,:]
+			Y_train[ i * step : i * step + n_temp] = Y_temp[:]
 		except:
 			print sample_name+" was not possible"
 
@@ -185,7 +207,7 @@ if __name__ ==  "__main__":
 
 	clf.fit(X_train,Y_train)
 	if int(options.save) == 0:
-		file_name = "classifier_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
+		file_name = "classifierSVM_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time
@@ -217,7 +239,7 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible"
-	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
+	file_name = "scoreSVM_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 
