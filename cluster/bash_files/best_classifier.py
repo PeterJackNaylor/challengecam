@@ -11,9 +11,7 @@ Creation date: 2016-02-24
 
 import sys
 import time
-
-### This has to be launch from the folder cluster..
-sys.path.append('/share/data40T/pnaylor/Cam16/scripts/challengecam/RandomForest_Peter/')
+from sklearn import svm
 
 import pdb
 import os
@@ -27,9 +25,7 @@ from evaluation import my_metrics
 import segm_db_access as sdba
 import cPickle as pickle
 from find_ROI import subsample,from_list_string_to_list_Tumor
-
-from forest_Peter import PeterRandomForestClassifier
-
+from sklearn.preprocessing import StandardScaler
 from optparse import OptionParser
 
 ### metrics to use
@@ -72,40 +68,27 @@ if __name__ ==  "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--source", dest="folder_source",
 	                  help="Where to find Tumor files", metavar="FILE")
-	parser.add_option("-f","--kfold_file",dest="kfold_file",
-					  help="where to find the kfold file",metavar="FILE")
-	parser.add_option("-k", "--fold", dest="k_folds",
-	                  help="Number of the fold in the cross validation", metavar="int")
 	parser.add_option("-n","--n_samples", dest="n_samples",default="1000",
 					  help="Number of samples taking from one image",metavar="int")
 	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
-	parser.add_option("-t","--n_tree",dest="n_tree",
-					  help="Number of trees for the random Forest",metavar="int")
-	parser.add_option("-p","--m_try",dest="m_try",
-					  help="Number of selected features at each tree",metavar="int")
-	parser.add_option("-b","--bootstrap",dest="n_bootstrap",
-					  help="Number of selected instances at each tree",metavar="int")
+	parser.add_option("--norm1",dest="norm1",default="0",
+					  help="Normalization scheme slide by slide",metavar="int")
+
+	parser.add_option("-c","--penalty",dest="c",
+					  help="value of the penalty in the SVM",metavar="int")
+
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
-	parser.add_option("--n_jobs",default="1",dest="n_jobs",
-					  help="number of jobs to pass to randomforest",metavar="int")
 	(options, args) = parser.parse_args()
 
 
 	print "source file: |"+options.folder_source
-	print "kfold file:  |"+options.kfold_file
-	print "fold number: |"+options.k_folds
-	print "n_samples:   |"+options.n_samples
-	print "subsampling: |"+options.version
-	print "n_tree:      |"+options.n_tree
-	print "m_try:       |"+options.m_try
-	print "bootstrap:   |"+options.n_bootstrap
+	print "C:           |"+options.c
 	print "saving:      |"+options.save
-	print "output folde:|"+options.output
-	print "n_jobs:      |"+options.n_jobs 
+	print "output folde:|"+options.output 
 
 
 	version_para = { 'n_sub': int(options.n_samples) }
@@ -126,7 +109,9 @@ if __name__ ==  "__main__":
 	Normal_slides_train  = from_list_string_to_list_Tumor(all_para[ i*11 + 8 ],all_para[ i*11 + 7 ])
 	Tumor_slides_train   = from_list_string_to_list_Tumor(all_para[ i*11 + 10],all_para[ i*11 + 9 ])
 
-	training_names = Normal_slides_train + Tumor_slides_train
+	training_names = ['Tumor_'+'%03i'%i for i in range(1,110+1)]
+	training_names+= ['Normal_'+'%03i'%i for i in range(1,160)+1] 
+
 	sample_name = training_names[0]
 	image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
 	image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
@@ -151,9 +136,8 @@ if __name__ ==  "__main__":
 
 	i = 0
 	for sample_name in training_names[1::]:
-		i += 1
 		try:
-			
+			i += 1
 			image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
 			image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
 			image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
@@ -164,6 +148,8 @@ if __name__ ==  "__main__":
 
 			X_temp = X_temp[index,:]
 			Y_temp = Y_temp[index]
+			if int(options.norm1) == 0:
+				X_temp = StandardScaler().fit_transform(X_temp)
 
 			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
@@ -186,15 +172,17 @@ if __name__ ==  "__main__":
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
-	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
-										   max_depth = None, class_weight="balanced_subsample",
-										   n_bootstrap = int(options.n_bootstrap) ,
-										   n_jobs= int(options.n_jobs)) ## penser a changer bootstrap
-	myforest.fit(X_train,Y_train)
+	clf = svm.SVC(C=float(options.c), kernel='linear',
+				  degree=3, gamma='auto',
+				  coef0=0.0, shrinking=True, probability=True,
+				  tol=0.001, cache_size=200, class_weight='balanced',
+				  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
+
+	clf.fit(X_train,Y_train)
 	if int(options.save) == 0:
-		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
+		file_name = "classifier_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
-		pickle.dump(myforest, pickle_file)
+		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time
 	print 'Training:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
@@ -210,10 +198,13 @@ if __name__ ==  "__main__":
 
 			X_pred = np.load( image_sauv_name_npy )
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
+			if int(options.norm1) == 0:
+				X_pred = StandardScaler().fit_transform(X_pred)
+
 			Y_pred[Y_pred>0] = 1
 
-			Y_hat = myforest.predict(X_pred)
-			#Y_hat_prob = myforest.predict_proba(X_pred)
+			Y_hat = clf.predict(X_pred)
+			#Y_hat_prob = clf.predict_proba(X_pred)
 			TP, FP, TN, FN = Score(Y_pred,Y_hat)
 			D['TP'] += TP
 			D['FP'] += FP

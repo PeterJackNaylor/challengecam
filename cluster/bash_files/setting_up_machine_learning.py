@@ -15,7 +15,7 @@ from optparse import OptionParser
 
 number_of_folds = 10
 p_s = [10, 15, 20, 30, 50]
-n_samples = [2000, 5000, 10000]
+n_samples = [2000, 5000]
 version = "default"
 number_of_trees = [500, 1000, 2000]
 n_bootstrap = [ 500, 1000, 2000, 5000, 10000 ]
