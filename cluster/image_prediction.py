@@ -54,8 +54,9 @@ class ImagePredictor(object):
             skimage.io.imsave(os.path.join(crop_output_folder, img_filename), img)
             
             difftime = time.time() - start_time
-            ms = (difftime - np.int(difftime)) * 1000
-            print '\t time elapsed: %02i:%02i:03i' % ( (difftime / 60), (difftime%60), ms)
+            ms = np.int(np.floor((difftime - np.floor(difftime)  )   * 1000))
+	    difftime = np.int(np.floor(difftime))
+            print '\t time elapsed: %02i:%02i:%03i' % ( (difftime / 60), (difftime%60), ms)
             
         # slide 
         # This would be /share/data40T/pnaylor/Cam16/Test/
@@ -75,10 +76,10 @@ class ImagePredictor(object):
     def process_file(self, data_filename, subsample=None):
 
         info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
-        x = info[1]
-        y = info[2]
-        width = info[3]
-        height = info[4]
+        x = int(info[2])
+        y = int(info[3])
+        width = int(info[4])
+        height = int(info[5])
 
         X = self.read_data(data_filename)
         if subsample is None:
@@ -88,12 +89,13 @@ class ImagePredictor(object):
             indices = np.arange(0, N, step=subsample)
             Xs = X[indices,:]
             Ys = self.classifier.predict_proba(Xs)
-            small_indices = np.range(len(Ys))
+            small_indices = np.arange(len(Ys))
             
             # repeats the indices [0, 1, 2] -> [0, 0, 1, 1, 2, 2]
             # this corresponds to an upscaling of small_indices.             
             large_indices = np.repeat(small_indices, subsample)
-            probs = Ys[large_indices]
+            probs = Ys[large_indices,1]
+	    probs = probs[:N]
 
         img = probs.reshape((width, height))
         
