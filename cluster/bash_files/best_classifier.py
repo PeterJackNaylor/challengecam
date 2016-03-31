@@ -30,6 +30,7 @@ from optparse import OptionParser
 
 ### metrics to use
 from sklearn.metrics import roc_auc_score,accuracy_score,f1_score,confusion_matrix
+from forest_Peter import PeterRandomForestClassifier
 
 ##---------------------------------------------------------------------------------------------------------------------------------------
 ##---------------------------------------------------------------------------------------------------------------------------------------
