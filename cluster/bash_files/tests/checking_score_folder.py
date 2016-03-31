@@ -48,3 +48,5 @@ if __name__ ==  "__main__":
 		except:
 			print "line "+line+" not here..."
 			output.write("line "+line+" not here... \n")
+	output.close()
+	f.close()
