@@ -80,8 +80,14 @@ if __name__ ==  "__main__":
 	print "starting " + slide_to_do
 	
 	start = timeit.default_timer()
+	if options.type in ['Normal', 'Tumor']:
+		iter_type = 'train'
+	else:
+		iter_type = 'prediction'
+	
 	alll =[]
-	for el in db_server.iter_final_prediction("prediction"):
+        print iter_type
+	for el in db_server.iter_final_prediction(iter_type):
 		alll.append(el)
 	if len(alll)>2:
 		print "wrong inputs"
