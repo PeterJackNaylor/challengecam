@@ -33,7 +33,7 @@ if __name__ ==  "__main__":
 	if not os.path.isdir(image_sauvegarde):
 		os.mkdir(image_sauvegarde)
 
-	f = open("settings_for_pred_base.txt", "a")
+	f = open("settings_for_pred_base_with_130.txt", "a")
 	line = 0
 	for prefixe in ["Test"]:#,"Normal","Tumor"]:
 
@@ -44,7 +44,7 @@ if __name__ ==  "__main__":
 		else:
 			n_range = 130
 
-		for i in range(121,n_range+1):
+		for i in range(1,n_range+1):
 			slide = prefixe + "_" +(3-len(str(i)))*'0' + str(i) +".tif"
 			slide_name = os.path.join(options.folder_source, prefixe, slide)
 			save_folder = os.path.join(image_sauvegarde, slide.split('.')[0])
