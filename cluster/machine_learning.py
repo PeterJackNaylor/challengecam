@@ -19,7 +19,6 @@ import pdb
 import os
 
 from getpass import getuser
-import smilPython as sp
 import numpy as np
 
 import folder_functions as ff
@@ -60,12 +59,14 @@ def Score(Y_pred,Y_hat):
 			TN += 1
 		elif val_Y_pred_i==0 and val_Y_pred_i!=val_Y_hat_i:
 			FN += 1
+		else:
+			print val_Y_pred_i, val_Y_hat_i
 	return(TP, FP, TN, FN)
 
 
 if __name__ ==  "__main__":
 
-	from cluster_parameters import *
+	#from cluster_parameters import *
 
 	### inputs and folder reads
 	parser = OptionParser()
@@ -75,7 +76,7 @@ if __name__ ==  "__main__":
 					  help="where to find the kfold file",metavar="FILE")
 	parser.add_option("-k", "--fold", dest="k_folds",
 	                  help="Number of the fold in the cross validation", metavar="int")
-	parser.add_option("-n","--n_samples", dest="n_samples",default=1000,
+	parser.add_option("-n","--n_samples", dest="n_samples",default="1000",
 					  help="Number of samples taking from one image",metavar="int")
 	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
@@ -101,10 +102,10 @@ if __name__ ==  "__main__":
 	print "subsampling: |"+options.version
 	print "n_tree:      |"+options.n_tree
 	print "m_try:       |"+options.m_try
-	print "bootstrap:   |"+options.bootstrap
-	print "save folder: |"+options.save
+	print "bootstrap:   |"+options.n_bootstrap
+	print "saving:      |"+options.save
 	print "output folde:|"+options.output
-	print "n_jobs:      |"+options.n_jobs
+	print "n_jobs:      |"+options.n_jobs 
 
 
 	version_para = { 'n_sub': int(options.n_samples) }
@@ -166,29 +167,33 @@ if __name__ ==  "__main__":
 			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
 			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
 		except:
-			print sample_name+" was not possible \n"
+			print sample_name+" was not possible"
 
 	index_to_keep_X = np.where(X_train.any(axis=1))[0]
 
 	X_train = X_train[index_to_keep_X,:]
 
 	Y_train = Y_train[index_to_keep_X]
-	
+
+	Y_train[Y_train>0]=1
+
 	diff_time = time.time() - start_time
+
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-
+	print 'With dim X_train = %d, %d' %X_train.shape
+	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
 	myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
-										   max_depth = None, class_weight="balanced",
+										   max_depth = None, class_weight="balanced_subsample",
 										   n_bootstrap = int(options.n_bootstrap) ,
 										   n_jobs= int(options.n_jobs)) ## penser a changer bootstrap
 	myforest.fit(X_train,Y_train)
 	if int(options.save) == 0:
-		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
+		file_name = "classifier_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
-
+		pickle.dump(myforest, pickle_file)
 	diff_time = time.time() - start_time
 	print 'Training:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
@@ -204,23 +209,24 @@ if __name__ ==  "__main__":
 
 			X_pred = np.load( image_sauv_name_npy )
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
+			Y_pred[Y_pred>0] = 1
 
 			Y_hat = myforest.predict(X_pred)
-			Y_hat_prob = myforest.predict_proba(X_pred)
+			#Y_hat_prob = myforest.predict_proba(X_pred)
 			TP, FP, TN, FN = Score(Y_pred,Y_hat)
 			D['TP'] += TP
 			D['FP'] += FP
 			D['TN'] += TN
 			D['FN'] += FN
 		except:
-			print sample_name+" was not possible \n"
-	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+".pickle"
+			print sample_name+" was not possible"
+	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 
-	im_pickle = open(image_sauv_name_score,  'w')
+	im_pickle = open(image_sauv_name_score,  'wb')
 
-	pickle.dump(image_sauv_name_score, D)
+	pickle.dump(D, im_pickle)
 	
 	diff_time = time.time() - start_time
 	print 'Prediction time:'

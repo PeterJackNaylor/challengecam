@@ -15,10 +15,10 @@ from optparse import OptionParser
 
 number_of_folds = 10
 p_s = [10, 15, 20, 30, 50]
-n_samples = 2000
+n_samples = [2000, 5000, 10000]
 version = "default"
-number_of_trees = [500, 1000]
-n_bootstrap = [ 500, 1000, 2000, 5000 ]
+number_of_trees = [500, 1000, 2000]
+n_bootstrap = [ 500, 1000, 2000, 5000, 10000 ]
 
 
 
@@ -31,12 +31,13 @@ if __name__ ==  "__main__":
 
 
 	f = open(os.path.join(options.output,"settings_for_machine_learning.txt"), "a")
-	line = 0
-	for n_boot in n_bootstrap:
-		for p in p_s:
-			for t in number_of_trees:
-				for i in range(number_of_folds):
-					f.write("__"+str(line) + "__ "+str(i)+" "+str(n_samples)+" "+version+" "
-						+ str(t) + " " +str(p) + " " + str(n_boot) +"\n")
-					line += 1
+	line = 1
+	for n_sampl in n_samples:
+		for n_boot in n_bootstrap:
+			for p in p_s:
+				for t in number_of_trees:
+					for i in range(number_of_folds):
+						f.write("__"+str(line) + "__ "+str(i)+" "+str(n_sampl)+" "+version+" "
+							+ str(t) + " " +str(p) + " " + str(n_boot) +"\n")
+						line += 1
 	f.close()
