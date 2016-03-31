@@ -101,25 +101,9 @@ class ImagePredictor(object):
         
         return img
 
-class PBSExporter(object):
-    def __init__(self, feature_folder):
-        print 'PBS exporter'
-        self.feature_folder = feature_folder
-        
-    def export_job_info(self, filename):
-        slides = filter(lambda x: os.path.isdir(os.path.join(self.feature_folder, x)), 
-                        os.listdir(self.feature_folder))
-        output_info = dict(zip(range(len(slides)), sorted(slides)))
-        fp = open(filename, 'w')
-        pickle.dump(output_info, fp)
-        fp.close()
-        print 'done'
-        return
-    
-    
 
 
-class SlidePredictor(object):
+class DEPRECATED_SlidePredictor(object):
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
         
         self.classifier_name = self.ip.classifier_name
@@ -146,7 +130,7 @@ class SlidePredictor(object):
             os.makedirs(crop_output_folder)
         self.ip.output_folder = crop_output_folder
         
-        for feature_file in feature_files:
+        #for feature_file in feature_files:
 
         return
     
@@ -348,8 +332,8 @@ if __name__ ==  "__main__":
     
     (options, args) = parser.parse_args()
 
-    if (options.classifier_name is None) or (options.feature_folder is None) or (options.output_folder is None) or (options.slide_name is None):
-        raise ValueError("slide name, classifier name, feature folder and output folder need to be specified.")
+    if (options.classifier_name is None) or (options.feature_folder is None) or (options.output_folder is None):
+        raise ValueError("classifier name, feature folder and output folder need to be specified.")
 
     
     if not options.subsample_factor is None:
@@ -368,8 +352,8 @@ if __name__ ==  "__main__":
     
     if not options.slide_number is None:
         slide_number = int(options.slide_number)
-        all_slides = filter(lambda x: os.path.isdir(os.path.join(self.feature_folder, x)), 
-                        os.listdir(self.feature_folder))
+        all_slides = filter(lambda x: os.path.isdir(os.path.join(options.feature_folder, x)), 
+                        os.listdir(options.feature_folder))
         slides_info = dict(zip(range(len(all_slides)), sorted(all_slides)))
         slide_name = slides_info[slide_number]
     elif not options.slide_name is None:
@@ -377,7 +361,7 @@ if __name__ ==  "__main__":
     else:
         raise ValueError('either slide number or slide name must be given.')
 
-    IP(options.slide_name, subsample=subsample_factor,
+    IP(slide_name, subsample=subsample_factor,
        upper_limit=upper_limit)
     
     print 'DONE !'
