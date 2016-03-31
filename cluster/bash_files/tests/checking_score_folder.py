@@ -27,7 +27,7 @@ if __name__ ==  "__main__":
 	folder_out  = options.output
 	
 	output = open(os.path.join(folder_out,"output_of_checking_score_folder.py"),'a')
-
+	output.write("############################################################ \n")
 	f = open(options.text, 'rb')
 	content = f.readlines()
 	for para in content:
