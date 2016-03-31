@@ -34,32 +34,6 @@ from sklearn.metrics import roc_auc_score,accuracy_score,f1_score,confusion_matr
 ##---------------------------------------------------------------------------------------------------------------------------------------
 ##---------------------------------------------------------------------------------------------------------------------------------------
 
-############### Before doing anything you have 
-############### to get a fold file, so launch that script
-###############
-
-def Score(Y_pred,Y_hat):
-	TP = 0
-	FP = 0
-	TN = 0
-	FN = 0
-	for i in range(len(Y_hat)): 
-		val_Y_pred_i = Y_pred[i]
-		val_Y_hat_i  = Y_hat[i]
-
-		if val_Y_pred_i==val_Y_hat_i and val_Y_pred_i==1:
-			TP += 1 
-		elif val_Y_pred_i==1 and val_Y_pred_i!=val_Y_hat_i:
-			FP += 1 
-		elif val_Y_pred_i==val_Y_hat_i and val_Y_hat_i==0:
-			TN += 1
-		elif val_Y_pred_i==0 and val_Y_pred_i!=val_Y_hat_i:
-			FN += 1
-		else:
-			print val_Y_pred_i, val_Y_hat_i
-	return(TP, FP, TN, FN)
-
-
 if __name__ ==  "__main__":
 
 	#from cluster_parameters import *
@@ -180,12 +154,13 @@ if __name__ ==  "__main__":
 
 		clf.fit(X_train,Y_train)
 	elif options.model == "forest":
-		myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
+		clf = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
 										max_depth = None, class_weight="balanced_subsample",
 										n_bootstrap = int(options.n_bootstrap) ,
 										n_jobs= int(options.n_jobs))
 	if int(options.save) == 0:
-		file_name = "classifier_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
+
+		file_name = "best_classifier"+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time
