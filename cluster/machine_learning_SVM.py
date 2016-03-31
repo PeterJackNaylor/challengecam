@@ -9,7 +9,7 @@ Authors:  Vaïa Machairas, Etienne Decencière, Peter Naylor, Thomas Walter.
 Creation date: 2016-02-24
 
 %run /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_learning_SVM.py --source /share/data40T_v2/challengecam_results/train/ --kfold_file /share/data40T_v2/challengecam_results/training/kfold.txt --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --norm1 0 --penalty 10 --save 1 --output /share/data40T_v2/challengecam_results/training/ --kmean_k 50 --kmean_n 100
-
+FIELD1,FIELD2,FIELD3,FIELD4,FIELD5,FIELD6 = "9","10000","default","2000","50","10000"
 """
 
 import sys
