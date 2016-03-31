@@ -24,7 +24,7 @@ import os
 import sys
 import pdb 
 import FIMM_histo.deconvolution as deconv
-
+from sklearn.cluster import KMeans
 from PIL import Image
 
 def computeEvaluationMask_Peter(pixelarray,resolution,level):
@@ -521,7 +521,41 @@ def subsample(Y,version,version_para):
             random.shuffle(index_val)
             list_res.append(index_val[0:min(n_sub,frequency)])
         res = np.concatenate(tuple(list_res))
+    elif version == 'kmeans':
+        ## this is a purely random susampling
+        ## checking for right arguments
+        if 'n_sub' not in version_para:
+            raise NameError("missing parameter n_sub in input dictionnary")
+        else:
+            n_val = len(val)
+            n_sub = version_para['n_sub'] / n_val
+        if 'k' not in version_para:
+            raise NameError("Missing parameter k in input dictionnary")
+        else:
+            k = version_para['k']
+        if 'X' not in version_para:
+            raise NameError('Missing data X for kmeans clustering')
+            X = version_para['X']
+
+        res = []
+        for values,frequency in iter_obj:
+            index_val = np.where(Y == values)[0]
+            X_temp = X[index_val,:]
+            kmeans = KMeans(init='k-means++', n_clusters=k, n_init=10)
+            groups = kmeans.fit_predict(X_temp)
+            #val_, freq_ = np.unique(groups, return_counts=True)
+            for id_group in range(50):
+                
+                index_subgroup = np.where(groups == id_group)[0]
+                freq_ = len(index_subgroup)
+
+                index_to_pic = index_val[index_subgroup]
+                random.shuffle(index_to_pic)
+                res += list(index_to_pic[min(freq_,n_sub)])
     return res
+
+
+
 
 def from_list_string_to_list_Tumor(lists, first_part):
     res = []

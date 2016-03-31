@@ -26,7 +26,7 @@ if __name__ ==  "__main__":
 	folder_save = options.saving
 	folder_out  = options.output
 	
-	output = open(os.path.join(folder_out,"output_of_checking_score_folder.py"),'a')
+	output = open(os.path.join(folder_out,"output_of_checking_score_folder.txt"),'a')
 	output.write("############################################################ \n")
 	f = open(options.text, 'rb')
 	content = f.readlines()

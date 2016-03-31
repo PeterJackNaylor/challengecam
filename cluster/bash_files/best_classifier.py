@@ -163,6 +163,7 @@ if __name__ ==  "__main__":
 										max_depth = None, class_weight="balanced_subsample",
 										n_bootstrap = int(options.n_bootstrap) ,
 										n_jobs= int(options.n_jobs))
+		clf.fit(X_train,Y_train)
 	if int(options.save) == 0:
 
 		file_name = "best_classifier"+".pickle"
