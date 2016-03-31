@@ -12,8 +12,8 @@
 ## #$ -V  Pass all current environment variables to the job.
 ## #$ -q bath # Tell the system which queue to use
 
-#$ -t 1-4 # les valeures successives que va prendre $SGE_TASK_ID
-#$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
+##$ -t 1-4 # les valeures successives que va prendre $SGE_TASK_ID
+##$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
 CAM16=/share/data40T_v2/challengecam_results/train/
 KFOLD=/share/data40T_v2/challengecam_results/training/kfold.txt

@@ -107,6 +107,7 @@ class ImagePredictor(object):
         
         return img
 
+<<<<<<< HEAD
     def process_file_small(self, data_filename, subsample=None):
 
         info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
@@ -158,6 +159,8 @@ class PBSExporter(object):
         return
     
     
+=======
+>>>>>>> geodesic_feature_list
 
 class WholeSlideGenerator(object):
     def __init__(self, prob_map_folder, img_orig_folder, output_folder):
@@ -186,9 +189,13 @@ class WholeSlideGenerator(object):
         w0 = slide_dimensions[0][0]
         h0 = slide_dimensions[0][1]
 
+<<<<<<< HEAD
         
         
 class SlidePredictor(object):
+=======
+class DEPRECATED_SlidePredictor(object):
+>>>>>>> geodesic_feature_list
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
         
         self.classifier_name = self.ip.classifier_name
@@ -215,8 +222,14 @@ class SlidePredictor(object):
             os.makedirs(crop_output_folder)
         self.ip.output_folder = crop_output_folder
         
+<<<<<<< HEAD
+        for feature_file in feature_files:
+            print feature_file
+            
+=======
         #for feature_file in feature_files:
 
+>>>>>>> geodesic_feature_list
         return
     
     def _DEPRECATED_process_slide(self, slidename, write_crops=True):

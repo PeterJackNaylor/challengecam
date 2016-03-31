@@ -43,9 +43,17 @@ if __name__ ==  "__main__":
 	data['Precision'] = data['TP'] / (data['TP'] + data['FP'])
 	data['Recall']    = data['TP'] / (data['TP'] + data['FN'])
 	data['F1']        = 2 * data['Precision'] * data['Recall'] / (data['Precision'] + data['Recall'])
-	data['Accuracy']  = (data['TP'] + data['FP']) / (data['TP'] + data['FP'] + data['TN'] + data['FN'])
+	data['Accuracy']  = (data['TP'] + data['TN']) / (data['TP'] + data['FP'] + data['TN'] + data['FN'])
 
-	groups = data.groupby(['N_tree','m_try','n_bootstrap', 'n_samples'])
+	groups_mean = data.dropna().groupby(['N_tree','m_try','n_bootstrap', 'n_samples']).mean()
+	groups_std = data.dropna().groupby(['N_tree','m_try','n_bootstrap', 'n_samples']).std()
+
+	best_F1=groups_mean['F1'].argmax()
+	print "best set of parameters: ", best_F1
+	print "with score: "
+	print groups_mean.ix[best_F1]
+	print "With variations over parameters:"
+	print groups_std.ix[best_F1]
 
 
 	pdb.set_trace()

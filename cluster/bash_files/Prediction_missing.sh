@@ -2,7 +2,7 @@
 
 #$ -cwd # execute the job from the current directory
 #$ -S /bin/bash #set bash environment
-#$ -N Prediction # name of the job as it will appear in qstat -f
+#$ -N MissFeat # name of the job as it will appear in qstat -f
 #$ -o /cbio/donnees/twalter/PBS/OUT
 #$ -e /cbio/donnees/twalter/PBS/ERR
 #$ -l h_vmem=4G
@@ -17,13 +17,13 @@
 ### #$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
 CAM16=/share/data40T/pnaylor/Cam16
-OUTPUT_FOLDER=/share/data40T_v2/challengecam_results/results_on_train
+OUTPUT_FOLDER=/share/data40T_v2/challengecam_results/Pred_data_set/
 spe_tag=__
 #source $HOME/.bash_profile
 
 source /cbio/donnees/twalter/src/challengecam/cluster/bash_files/twalter_code_profile
 
-FILE=settings_for_train_base.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
+FILE=settings_for_pred_base_with_130.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
 FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
 FIELD2=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f3) # la partie droite est pour chopper la valeur qui est dans la colonne voulue 
 FIELD3=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) # sachant que le séparateur est l'espace

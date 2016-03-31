@@ -12,23 +12,22 @@
 ## #$ -V  Pass all current environment variables to the job.
 ## #$ -q bath # Tell the system which queue to use
 
-#$ -t 1-4 # les valeures successives que va prendre $SGE_TASK_ID
-#$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
+##$ -t 1-4 # les valeures successives que va prendre $SGE_TASK_ID
+##$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
-CAM16=/share/data40T_v2/challengecam_results/train/
-KFOLD=/share/data40T_v2/challengecam_results/training/kfold.txt
+
+PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/best_classifier.py
+SOURCE=/share/data40T_v2/challengecam_results/train/
+n_samples=10000
+version=default
+n_tree=2000
+m_try=50
+bootstrap=10000
+saving=0  ### it is going to be saved
 OUTPUT=/share/data40T_v2/challengecam_results/training/
-spe_tag=__
-PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_learning.py
-source $HOME/.bash_profile
+JOBS=1
+C=1.0
+model=forest
 
-FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/bash_files/settings_for_machine_learning.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
-FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
-FIELD2=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f3) # la partie droite est pour chopper la valeur qui est dans la colonne voulue 
-FIELD3=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) # sachant que le séparateur est l'espace
-FIELD4=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f5)
-FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
-FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 
-echo $FIELD1:$FIELD2:$FIELD3:$FIELD4:$FIELD5:$FIELD6
-python $PYTHON_FILE --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 1 --output $OUTPUT --n_jobs 1
+python $PYTHON_FILE --source $SOURCE --n_samples $n_samples --version $version --n_tree $n_tree --m_try $m_try --bootstrap $bootstrap --save $saving --output $OUTPUT --n_jobs $JOBS -c $C --model $model
