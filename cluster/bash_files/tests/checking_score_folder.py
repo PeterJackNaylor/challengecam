@@ -24,6 +24,9 @@ if __name__ ==  "__main__":
 
 
 	folder_save = options.saving
+	folder_out  = options.output
+	
+	output = open(os.path.join(folder_out,"output_of_checking_score_folder.py"),'a')
 
 	f = open(options.text, 'rb')
 	content = f.readlines()
@@ -44,3 +47,4 @@ if __name__ ==  "__main__":
 			D  = pkl.load(open(path,'rb'))
 		except:
 			print "line "+line+" not here..."
+			output.write("line "+line+" not here... \n")
