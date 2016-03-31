@@ -55,7 +55,7 @@ class ImagePredictor(object):
             
             difftime = time.time() - start_time
             ms = np.int(np.floor((difftime - np.floor(difftime)  )   * 1000))
-	    difftime = np.int(np.floor(difftime))
+            difftime = np.int(np.floor(difftime))
             print '\t time elapsed: %02i:%02i:%03i' % ( (difftime / 60), (difftime%60), ms)
             
         # slide 
@@ -100,6 +100,120 @@ class ImagePredictor(object):
         img = probs.reshape((width, height))
         
         return img
+
+class PBSExporter(object):
+    def __init__(self, feature_folder):
+        print 'PBS exporter'
+        self.feature_folder = feature_folder
+        
+    def export_job_info(self, filename):
+        slides = filter(lambda x: os.path.isdir(os.path.join(self.feature_folder, x)), 
+                        os.listdir(self.feature_folder))
+        output_info = dict(zip(range(len(slides)), sorted(slides)))
+        fp = open(filename, 'w')
+        pickle.dump(output_info, fp)
+        fp.close()
+        print 'done'
+        return
+    
+    
+
+
+class SlidePredictor(object):
+    def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
+        
+        self.classifier_name = self.ip.classifier_name
+        self.feature_folder = self.ip.feature_folder
+        self.output_folder = self.ip.output_folder
+        self.img_orig_folder = self.ip.img_orig_folder
+
+        self.map_resolution_level = 4
+        self.resolution_level = 2
+
+        self.ip = ImagePredictor(self.classifier_name, self.feature_folder, 
+                                 self.output_folder, self.img_orig_folder)
+
+
+    def process_slide(self, slidename):
+        # features
+        slide_feature_folder = os.path.join(self.feature_folder, slidename)
+        feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
+                               os.listdir(slide_feature_folder))
+
+        # for crops
+        crop_output_folder = os.path.join(self.output_folder, 'crops', slidename)
+        if not os.path.isdir(crop_output_folder):
+            os.makedirs(crop_output_folder)
+        self.ip.output_folder = crop_output_folder
+        
+        for feature_file in feature_files:
+
+        return
+    
+    def _DEPRECATED_process_slide(self, slidename, write_crops=True):
+        
+        # features
+        slide_feature_folder = os.path.join(self.feature_folder, slidename)
+        feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
+                               os.listdir(slide_feature_folder))
+
+        # output
+#         whole_slide_output_folder = os.path.join(self.output_folder, 'whole_slide', slidename)
+#         if not os.path.isdir(whole_slide_output_folder):
+#             os.makedirs(whole_slide_output_folder)
+
+        crop_output_folder = os.path.join(self.output_folder, 'crops', slidename)
+        if not os.path.isdir(crop_output_folder):
+            os.makedirs(crop_output_folder)
+            
+        # slide 
+        # This would be /share/data40T/pnaylor/Cam16/Test/
+        slide_filename = os.path.join(self.img_orig_folder, '%s.tif' % slidename)
+        slide = openslide.open_slide(slide_filename)
+        slide_dimensions = slide.level_dimensions
+        slide_factors = slide.level_downsamples
+        slide.close()
+        
+        # shape of the slide at resolution level 0
+        w0 = slide_dimensions[0][0]
+        h0 = slide_dimensions[0][1]
+        
+        res = []
+        for feature_file in feature_files:
+            info = os.path.splitext(feature_file)[0].split('_')
+            x = info[1]
+            y = info[2]
+            width = info[3]
+            height = info[4]
+            
+            full_filename = os.path.join(slide_folder, feature_file)
+            img = self.process_file(full_filename, width, height)
+            
+            img_small = skimage.transform.downscale_local_mean(img, np.ones(len(img.shape)) * self.factor)
+            res.append({
+                        'img': img_small,
+                        'x': x,
+                        'y': y,
+                        'x0': x * slide_factors[self.resolution_level],
+                        'y0': y * slide_factors[self.resolution_level],                        
+                        })
+            
+            if write_crops:
+                img_name = os.path.join(crop_output_folder, 'prob_map_%s.png' + os.path.splitext(fulle_filename)[0])
+                skimage.io.imsave(img_name, img)
+        
+        # reconstruct the entire image
+        width = slide_dimensions[self.map_resolution_level][0]
+        height= slide_dimensions[self.map_resolution_level][1]
+        img_rec = np.zeros( shape = (width , height) ) 
+        coverage = np.zeros( shape = (width , height) ) 
+
+#        for crop in res:
+#            # to do: loop over crops. 
+#            print res['x']
+            
+        return
+
     
     def _deprecated_process_slide(self, slidename, write_crops=False):
         
@@ -229,6 +343,8 @@ if __name__ ==  "__main__":
                       help="maximal number of crops to be analyzed (mainly for debugging)")
     parser.add_option("--slide_name", dest="slide_name",
                       help="name of the slide (without extension)")
+    parser.add_option("--slide_number", dest="slide_number",
+                      help="number of the slide")
     
     (options, args) = parser.parse_args()
 
@@ -250,6 +366,17 @@ if __name__ ==  "__main__":
                         options.feature_folder,
                         options.output_folder)
     
+    if not options.slide_number is None:
+        slide_number = int(options.slide_number)
+        all_slides = filter(lambda x: os.path.isdir(os.path.join(self.feature_folder, x)), 
+                        os.listdir(self.feature_folder))
+        slides_info = dict(zip(range(len(all_slides)), sorted(all_slides)))
+        slide_name = slides_info[slide_number]
+    elif not options.slide_name is None:
+        slide_name = options.slide_name
+    else:
+        raise ValueError('either slide number or slide name must be given.')
+
     IP(options.slide_name, subsample=subsample_factor,
        upper_limit=upper_limit)
     
