@@ -6,7 +6,7 @@
 #$ -o /cbio/donnees/pnaylor/PBS/OUT
 #$ -e /cbio/donnees/pnaylor/PBS/ERR
 #$ -l h_vmem=4G
-#$ -pe orte 2  
+##$ -pe orte 2  
 
 ## others optional options
 ## #$ -V  Pass all current environment variables to the job.
@@ -30,5 +30,5 @@ FIELD4=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f5)
 FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
 FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 
-echo $FIELD1:$FIELD2:$FIELD3:$FIELD4:$FIELD5:$FIELD6
+
 python $PYTHON_FILE --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --n_tree $FIELD4 --m_try $FIELD5 --bootstrap $FIELD6 --save 1 --output $OUTPUT --n_jobs 1
