@@ -62,6 +62,8 @@ if __name__ ==  "__main__":
 					  help="output folder",metavar="folder")
 	parser.add_option("--n_jobs",default="1",dest="n_jobs",
 					  help="number of jobs to pass to randomforest",metavar="int")
+	parser.add_option("--model",dest="model",
+					  help="Model to be used",metavar="str")
 	(options, args) = parser.parse_args()
 
 	print "n_samples:   |"+options.n_samples
@@ -75,6 +77,7 @@ if __name__ ==  "__main__":
 	print "bootstrap:   |"+options.n_bootstrap
 	print "n_jobs:      |"+options.n_jobs
 	print "norm1:       |"+options.norm1
+	print "model:       |"+options.model
 
 	version_para = { 'n_sub': int(options.n_samples) }
 
@@ -144,6 +147,7 @@ if __name__ ==  "__main__":
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
 	print 'With dim X_train = %d, %d' %X_train.shape
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
+	pdb.set_trace()
 	start_time = time.time()
 	if options.model == 'svm':
 		clf = svm.SVC(C=float(options.c), kernel='linear',
