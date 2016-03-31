@@ -31,7 +31,8 @@ class ImagePredictor(object):
         X = np.load(data_filename)
         return X 
     
-    def __call__(self, slidename, write_crop=False, subsample=None, upper_limit=None):
+    def __call__(self, slidename, write_crop=False, subsample=None, upper_limit=None, 
+                 adapt_size=True):
         
         # features
         slide_folder = os.path.join(self.feature_folder, slidename)
@@ -49,7 +50,11 @@ class ImagePredictor(object):
             start_time = time.time()
             print 'processing %s' % os.path.splitext(os.path.basename(feature_file))[0]
             
-            img = self.process_file(os.path.join(slide_folder, feature_file), subsample)
+            if adapt_size:
+                img = self.process_file_small(os.path.join(slide_folder, feature_file), subsample)
+            else: 
+                img = self.process_file(os.path.join(slide_folder, feature_file), subsample)
+                
             img_filename = 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))[0]
             skimage.io.imsave(os.path.join(crop_output_folder, img_filename), img)
             
@@ -82,10 +87,11 @@ class ImagePredictor(object):
         height = int(info[5])
 
         X = self.read_data(data_filename)
+        N = X.shape[0]
+
         if subsample is None:
             probs = self.classifier.predict_proba(X)                    
         else:
-            N = X.shape[0]
             indices = np.arange(0, N, step=subsample)
             Xs = X[indices,:]
             Ys = self.classifier.predict_proba(Xs)
@@ -95,10 +101,45 @@ class ImagePredictor(object):
             # this corresponds to an upscaling of small_indices.             
             large_indices = np.repeat(small_indices, subsample)
             probs = Ys[large_indices,1]
-	    probs = probs[:N]
+            probs = probs[:N]
 
         img = probs.reshape((width, height))
         
+        return img
+
+    def process_file_small(self, data_filename, subsample=None):
+
+        info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
+        x = int(info[2])
+        y = int(info[3])
+        width = int(info[4])
+        height = int(info[5])
+
+        X = self.read_data(data_filename)
+        if subsample is None:
+            probs = self.classifier.predict_proba(X)
+            img = probs.reshape((width, height))                  
+        else:
+            img_grid = np.ones((width, height))
+            col_indices = np.arange(0, width, step=subsample)
+            row_indices = np.arange(0, height, step=subsample)
+            new_width = len(col_indices)
+            new_height = len(row_indices)
+            A = np.zeros((width, height))
+            B = np.zeros((width, height))
+            A[row_indices,:] = 1
+            B[:,col_indices] = 1
+            C = A * B
+            Cvec = np.ravel(C)
+            indices = np.where(Cvec>0)
+            
+            #N = X.shape[0]
+            #indices = np.arange(0, N, step=subsample)
+            Xs = X[indices,:]
+            Ys = self.classifier.predict_proba(Xs)
+            probs = Ys[:,1]
+            img = probs.reshape((new_width, new_height))
+            
         return img
 
 class PBSExporter(object):
@@ -118,7 +159,35 @@ class PBSExporter(object):
     
     
 
+class WholeSlideGenerator(object):
+    def __init__(self, prob_map_folder, img_orig_folder, output_folder):
+        self.prob_map_folder = prob_map_folder
+        self.img_orig_folder
+        self.output_folder = output_folder
+        if not os.path.isdir(self.output_folder):
+            print 'make %s' % self.output_folder
+            os.makedirs(self.output_folder)
 
+        # the level at which the probability maps have been stored.
+        self.resolution_level = 2
+        
+        # the level at which the probability map is to be saved. 
+        self.target_level = 4
+        
+    def __call__(self, slidename):
+
+        slide_filename = os.path.join(self.img_orig_folder, '%s.tif' % slidename)
+        slide = openslide.open_slide(slide_filename)
+        slide_dimensions = slide.level_dimensions
+        slide_factors = slide.level_downsamples
+        slide.close()
+        
+        # shape of the slide at resolution level 0
+        w0 = slide_dimensions[0][0]
+        h0 = slide_dimensions[0][1]
+
+        
+        
 class SlidePredictor(object):
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
         
@@ -147,7 +216,8 @@ class SlidePredictor(object):
         self.ip.output_folder = crop_output_folder
         
         for feature_file in feature_files:
-
+            print feature_file
+            
         return
     
     def _DEPRECATED_process_slide(self, slidename, write_crops=True):

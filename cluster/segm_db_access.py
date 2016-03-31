@@ -309,7 +309,7 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
             	list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
             	for i in range(len(list_of_imagettes)):
                 	yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
-	else:
+	    else:
             for im_file in os.listdir(self._im_dir[code])[first:last]:
                 if self.slide_to_do in im_file:
             	   list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
