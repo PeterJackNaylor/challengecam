@@ -86,6 +86,8 @@ if __name__ ==  "__main__":
 					  help="booleen to save, 0: True 1: False", metavar="bool")
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
+	parser.add_option("--n_jobs",default="1",dest="n_jobs",
+					  help="number of jobs to pass to randomforest",metavar="int")
 	(options, args) = parser.parse_args()
 
 	print "n_samples:   |"+options.n_samples
@@ -97,6 +99,8 @@ if __name__ ==  "__main__":
 	print "n_tree:      |"+options.n_tree
 	print "m_try:       |"+options.m_try
 	print "bootstrap:   |"+options.n_bootstrap
+	print "n_jobs:      |"+options.n_jobs
+	print "norm1:       |"+options.norm1
 
 	version_para = { 'n_sub': int(options.n_samples) }
 
@@ -176,6 +180,10 @@ if __name__ ==  "__main__":
 
 		clf.fit(X_train,Y_train)
 	elif options.model == "forest":
+		myforest = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),
+										max_depth = None, class_weight="balanced_subsample",
+										n_bootstrap = int(options.n_bootstrap) ,
+										n_jobs= int(options.n_jobs))
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
