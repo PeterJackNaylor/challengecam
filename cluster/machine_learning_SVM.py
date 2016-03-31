@@ -7,6 +7,9 @@ Script for pixel classification.
 Authors:  Vaïa Machairas, Etienne Decencière, Peter Naylor, Thomas Walter.
 
 Creation date: 2016-02-24
+
+%run /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_learning_SVM.py --source /share/data40T_v2/challengecam_results/train/ --kfold_file /share/data40T_v2/challengecam_results/training/kfold.txt --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --norm1 0 --penalty 10 --save 1 --output /share/data40T_v2/challengecam_results/training/ --kmean_k 50 --kmean_n 100
+
 """
 
 import sys
@@ -68,42 +71,42 @@ if __name__ ==  "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--source", dest="folder_source",
 	                  help="Where to find Tumor files", metavar="FILE")
-	print "source file: |"+options.folder_source
 
 	parser.add_option("-f","--kfold_file",dest="kfold_file",
 					  help="where to find the kfold file",metavar="FILE")
-	print "kfold file:  |"+options.kfold_file
 	parser.add_option("-k", "--fold", dest="k_folds",
 	                  help="Number of the fold in the cross validation", metavar="int")
-	print "fold number: |"+options.k_folds
 	parser.add_option("-n","--n_samples", dest="n_samples",default="1000",
 					  help="Number of samples taking from one image",metavar="int")
-	print "n_samples:   |"+options.n_samples
 	parser.add_option("-v","--version",dest="version",default="default",
 					  help="sub sample Version",metavar="string")
-	print "version:     |"+options.version
 	parser.add_option("--norm1",dest="norm1",default="0",
 					  help="Normalization scheme slide by slide",metavar="int")
-	print "norm1:       |"+options.norm1
 	parser.add_option("-c","--penalty",dest="c",
 					  help="value of the penalty in the SVM",metavar="int")
-	print "C:           |"+options.c
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
-	print "saving:      |"+options.save
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
-	print "output folde:|"+options.output
 	parser.add_option("--kmean_k",default="0",dest="kmean_k",
 					  help="number of clusters of the k mean",metavar="int > 0 ")
-	print "kmeans k    :|"+options.kmean_k
 	parser.add_option("--kmean_n",dest="kmean_n",
 					  help="downsampling number with the k mean algorithm",metavar="int")
-	print "kmean downsa:|"+options.kmean_n
 	
 
 	(options, args) = parser.parse_args()
-	
+	print "source file: |"+options.folder_source
+	print "kfold file:  |"+options.kfold_file
+	print "fold number: |"+options.k_folds
+	print "n_samples:   |"+options.n_samples
+	print "version:     |"+options.version
+	print "norm1:       |"+options.norm1
+	print "C:           |"+options.c
+	print "saving:      |"+options.save
+	print "output folde:|"+options.output
+	print "kmeans k    :|"+options.kmean_k
+	print "kmean downsa:|"+options.kmean_n
+
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	if int(options.kmean_k) != 0:
