@@ -524,6 +524,7 @@ def subsample(Y,version,version_para):
     elif version == 'kmeans':
         ## this is a purely random susampling
         ## checking for right arguments
+        pdb.set_trace()
         if 'n_sub' not in version_para:
             raise NameError("missing parameter n_sub in input dictionnary")
         else:
