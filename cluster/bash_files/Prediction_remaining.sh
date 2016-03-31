@@ -35,5 +35,5 @@ FIELD7=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f8)
 
 echo python /share/apps/user_apps/challengecam/cluster/Pred_Data_set.py -s $CAM16 --type $FIELD1 --number $FIELD2 -x $FIELD3 -y $FIELD4 --width $FIELD5 --height $FIELD6 --resolution $FIELD7 --output $OUTPUT_FOLDER
 
-python /share/apps/user_apps/challengecam/cluster/Pred_Data_set.py -s $CAM16 --type $FIELD1 --number $FIELD2 -x $FIELD3 -y $FIELD4 --width $FIELD5 --height $FIELD6 --resolution $FIELD7 --output $OUTPUT_FOLDER
+python /cbio/donnees/twalter/src/challengecam/cluster/Pred_Data_set.py -s $CAM16 --type $FIELD1 --number $FIELD2 -x $FIELD3 -y $FIELD4 --width $FIELD5 --height $FIELD6 --resolution $FIELD7 --output $OUTPUT_FOLDER
 
