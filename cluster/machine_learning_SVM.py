@@ -178,6 +178,7 @@ if __name__ ==  "__main__":
 				X_temp = X_temp[index_kmean,:]
 				Y_temp = Y_temp[index_kmean]
 			n_temp = X_temp.shape[0]
+			pdb.set_trace()
 			X_train[ i * step : i * step + n_temp,: ] = X_temp[:,:]
 			Y_train[ i * step : i * step + n_temp] = Y_temp[:]
 		except:
