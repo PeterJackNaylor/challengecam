@@ -84,7 +84,7 @@ if __name__ ==  "__main__":
 	start_time = time.time()
 
 	training_names = ['Tumor_'+'%03i'%i for i in range(1,110+1)]
-	training_names+= ['Normal_'+'%03i'%i for i in range(1,160)+1] 
+	training_names+= ['Normal_'+'%03i'%i for i in range(1,160+1)] 
 
 	sample_name = training_names[0]
 	image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
