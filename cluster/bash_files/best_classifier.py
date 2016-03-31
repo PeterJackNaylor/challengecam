@@ -74,40 +74,36 @@ if __name__ ==  "__main__":
 					  help="sub sample Version",metavar="string")
 	parser.add_option("--norm1",dest="norm1",default="0",
 					  help="Normalization scheme slide by slide",metavar="int")
-
+	parser.add_option("-t","--n_tree",dest="n_tree",
+					  help="Number of trees for the random Forest",metavar="int")
+	parser.add_option("-p","--m_try",dest="m_try",
+					  help="Number of selected features at each tree",metavar="int")
+	parser.add_option("-b","--bootstrap",dest="n_bootstrap",
+					  help="Number of selected instances at each tree",metavar="int")
 	parser.add_option("-c","--penalty",dest="c",
 					  help="value of the penalty in the SVM",metavar="int")
-
 	parser.add_option("--save", dest="save",default="1",
 					  help="booleen to save, 0: True 1: False", metavar="bool")
 	parser.add_option("-o","--output",default=".",dest="output",
 					  help="output folder",metavar="folder")
 	(options, args) = parser.parse_args()
 
-
+	print "n_samples:   |"+options.n_samples
+	print "subsampling: |"+options.version
 	print "source file: |"+options.folder_source
 	print "C:           |"+options.c
 	print "saving:      |"+options.save
 	print "output folde:|"+options.output 
-
+	print "n_tree:      |"+options.n_tree
+	print "m_try:       |"+options.m_try
+	print "bootstrap:   |"+options.n_bootstrap
 
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	data_location   = options.folder_source
 	saving_location = options.output
 	
-	kfold_file = options.kfold_file
-	f = open(kfold_file,'r')
-	all_para = f.read().split('\n')
-	
-	i = int(options.k_folds) ## fold number
-
 	start_time = time.time()
-
-	Normal_slides_test   = from_list_string_to_list_Tumor(all_para[ i*11 + 3 ],all_para[ i*11 + 2 ])
-	Tumor_slides_test    = from_list_string_to_list_Tumor(all_para[ i*11 + 5 ],all_para[ i*11 + 4 ])
-	Normal_slides_train  = from_list_string_to_list_Tumor(all_para[ i*11 + 8 ],all_para[ i*11 + 7 ])
-	Tumor_slides_train   = from_list_string_to_list_Tumor(all_para[ i*11 + 10],all_para[ i*11 + 9 ])
 
 	training_names = ['Tumor_'+'%03i'%i for i in range(1,110+1)]
 	training_names+= ['Normal_'+'%03i'%i for i in range(1,160)+1] 
@@ -171,55 +167,19 @@ if __name__ ==  "__main__":
 	print 'With dim X_train = %d, %d' %X_train.shape
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
-	
-	clf = svm.SVC(C=float(options.c), kernel='linear',
-				  degree=3, gamma='auto',
-				  coef0=0.0, shrinking=True, probability=True,
-				  tol=0.001, cache_size=200, class_weight='balanced',
-				  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
+	if options.model == 'svm':
+		clf = svm.SVC(C=float(options.c), kernel='linear',
+					  degree=3, gamma='auto',
+					  coef0=0.0, shrinking=True, probability=True,
+					  tol=0.001, cache_size=200, class_weight='balanced',
+					  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
 
-	clf.fit(X_train,Y_train)
+		clf.fit(X_train,Y_train)
+	elif options.model == "forest":
 	if int(options.save) == 0:
 		file_name = "classifier_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time
 	print 'Training:'
-	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-	
-	start_time = time.time()
-
-	D = {'TP':0,'FP':0,'TN':0,'FN':0}
-
-	for sample_name in Normal_slides_test+Tumor_slides_test:
-		try:
-			image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
-			image_sauv_name_y_npy  = os.path.join(data_location ,sample_name, sample_name  + "_y_.npy")
-
-			X_pred = np.load( image_sauv_name_npy )
-			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
-			if int(options.norm1) == 0:
-				X_pred = StandardScaler().fit_transform(X_pred)
-
-			Y_pred[Y_pred>0] = 1
-
-			Y_hat = clf.predict(X_pred)
-			#Y_hat_prob = clf.predict_proba(X_pred)
-			TP, FP, TN, FN = Score(Y_pred,Y_hat)
-			D['TP'] += TP
-			D['FP'] += FP
-			D['TN'] += TN
-			D['FN'] += FN
-		except:
-			print sample_name+" was not possible"
-	file_name = "score_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
-	image_sauv_name_score = os.path.join(saving_location , file_name)
-
-
-	im_pickle = open(image_sauv_name_score,  'wb')
-
-	pickle.dump(D, im_pickle)
-	
-	diff_time = time.time() - start_time
-	print 'Prediction time:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
