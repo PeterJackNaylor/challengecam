@@ -7,6 +7,8 @@ import cPickle as pickle
 
 from optparse import OptionParser
 
+import openslide
+
 import pdb
 
 
@@ -14,7 +16,7 @@ import pdb
 class WholeSlideGenerator(object):
     def __init__(self, prob_map_folder, img_orig_folder, output_folder):
         self.prob_map_folder = prob_map_folder
-        self.img_orig_folder
+        self.img_orig_folder = img_orig_folder
         self.output_folder = output_folder
         if not os.path.isdir(self.output_folder):
             print 'make %s' % self.output_folder
@@ -55,14 +57,14 @@ class WholeSlideGenerator(object):
         counts = np.zeros((h2_ss, w2_ss), dtype=np.float)
         
         crop_folder = os.path.join(self.prob_map_folder, slidename)
-        imagenames = self.listdir(crop_folder)
+        imagenames = os.listdir(crop_folder)
         for i, imagename in enumerate(imagenames):
             
-            print 'processing %i / %i : %s' % (i, len(imagenames), imagename)
+            print 'processing %i / %i : %s' % (i+1, len(imagenames), imagename)
             
             # retrieve information from filename
             # probmap_Test_002_21016_114392_690_874
-            info = os.path.splitext(feature_file)[0].split('_')
+            info = os.path.splitext(imagename)[0].split('_')
             x = int(info[3])
             y = int(info[4])
             width = int(info[5])
@@ -73,16 +75,21 @@ class WholeSlideGenerator(object):
             # read image
             img = skimage.io.imread(os.path.join(crop_folder, imagename))
             img_h, img_w = img.shape 
-            
+        
+            #pdb.set_trace()    
             img_out[new_y:(new_y + img_h),new_x:(new_x + img_w)] += img 
             counts[new_y:(new_y + img_h),new_x:(new_x + img_w)] += 1
 
         counts[counts==0] = 1.0
         img_out = img_out / counts
-        
+	img_out = 255.0 / 2**16 * img_out 
+        img_out[img_out > 255] = 255
+	img_out = img_out.astype('uint8')
+
         out_filename = os.path.join(self.output_folder, 'whole_probmap_%s.png' % slidename)
         print 'writing %s' % out_filename
         skimage.io.imsave(out_filename, img_out)
+	
         return
 
 if __name__ ==  "__main__":
@@ -111,11 +118,11 @@ if __name__ ==  "__main__":
                               options.output_folder)
     
     if not options.slide_number is None:
-        slide_number = int(options.slide_number)
+        slide_number = int(options.slide_number) - 1
         all_slides = filter(lambda x: os.path.splitext(x)[-1] == '.tif', 
                             os.listdir(options.orig_folder))
         slides_info = dict(zip(range(len(all_slides)), sorted(all_slides)))
-        slide_name = slides_info[slide_number]
+        slide_name = os.path.splitext(slides_info[slide_number])[0]
     elif not options.slide_name is None:
         slide_name = options.slide_name
     else:
