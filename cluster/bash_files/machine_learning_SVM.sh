@@ -24,6 +24,7 @@ PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_le
 KGROUPS=30
 KSAMPLES=1
 KERNEL=rbf
+SUBSAMPLE_FACTOR=16
 
 source $HOME/.bash_profile
 
@@ -34,4 +35,4 @@ FIELD3=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) # sachant q
 FIELD4=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f5)
 FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
 
-python $PYTHON_FILE --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --norm1 0 --penalty $FIELD4 --save 1  --output $OUTPUT  --kmean_k $KGROUPS --kmean_n $KSAMPLES --kernel $KERNEL --gamma $FIELD5
+python $PYTHON_FILE --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --norm1 0 --penalty $FIELD4 --save 1  --output $OUTPUT  --kmean_k $KGROUPS --kmean_n $KSAMPLES --kernel $KERNEL --gamma $FIELD5 --subsample_factor $SUBSAMPLE_FACTOR

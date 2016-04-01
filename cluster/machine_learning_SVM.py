@@ -96,7 +96,10 @@ if __name__ ==  "__main__":
 					  help="number of clusters of the k mean",metavar="int > 0 ")
 	parser.add_option("--kmean_n",dest="kmean_n",
 					  help="downsampling number with the k mean algorithm",metavar="int")
+	parser.add_option("--subsample_factor",dest="subfactor",
+					  help="downsampling number for the prediction",metavar="int")
 	
+
 
 	(options, args) = parser.parse_args()
 	print "source file: |"+options.folder_source
@@ -112,6 +115,7 @@ if __name__ ==  "__main__":
 	print "output folde:|"+options.output
 	print "kmeans k    :|"+options.kmean_k
 	print "kmean downsa:|"+options.kmean_n
+	print "subsamplePred|"+options.subfactor
 
 	version_para = { 'n_sub': int(options.n_samples) }
 
@@ -238,7 +242,12 @@ if __name__ ==  "__main__":
 			Y_pred = np.load( image_sauv_name_y_npy ).ravel()
 			if int(options.norm1) == 0:
 				X_pred = StandardScaler().fit_transform(X_pred)
-
+			if int(options.subfactor) != 0:
+				N = X_pred.shape
+				indices = np.arange(0, N, step=int(options.subfactor))
+				X_pred = X_pred[indices,:]
+				Y_pred = Y_pred[indices]
+				
 			Y_pred[Y_pred>0] = 1
 
 			Y_hat = clf.predict(X_pred)
