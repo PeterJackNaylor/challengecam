@@ -45,10 +45,12 @@ class ImagePredictor(object):
 
         if upper_limit is None:
             upper_limit = len(feature_files)
- 
+
+	nb_files = len(feature_files[:upper_limit])
+ 	i = 1
         for feature_file in feature_files[:upper_limit]:
             start_time = time.time()
-            print 'processing %s' % os.path.splitext(os.path.basename(feature_file))[0]
+            print 'processing %i / %i : %s' % (i, nb_files, os.path.splitext(os.path.basename(feature_file))[0])
             
             if adapt_size:
                 img = self.process_file_small(os.path.join(slide_folder, feature_file), subsample)
@@ -435,7 +437,7 @@ if __name__ ==  "__main__":
                         options.output_folder)
     
     if not options.slide_number is None:
-        slide_number = int(options.slide_number)
+        slide_number = int(options.slide_number) - 1
         all_slides = filter(lambda x: os.path.isdir(os.path.join(options.feature_folder, x)), 
                         os.listdir(options.feature_folder))
         slides_info = dict(zip(range(len(all_slides)), sorted(all_slides)))
