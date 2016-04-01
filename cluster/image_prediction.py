@@ -143,22 +143,6 @@ class ImagePredictor(object):
             
         return img.T
 
-class PBSExporter(object):
-    def __init__(self, feature_folder):
-        print 'PBS exporter'
-        self.feature_folder = feature_folder
-        
-    def export_job_info(self, filename):
-        slides = filter(lambda x: os.path.isdir(os.path.join(self.feature_folder, x)), 
-                        os.listdir(self.feature_folder))
-        output_info = dict(zip(range(len(slides)), sorted(slides)))
-        fp = open(filename, 'w')
-        pickle.dump(output_info, fp)
-        fp.close()
-        print 'done'
-        return
-    
-    
 
 class WholeSlideGenerator(object):
     def __init__(self, prob_map_folder, img_orig_folder, output_folder):
@@ -171,12 +155,18 @@ class WholeSlideGenerator(object):
 
         # the level at which the probability maps have been stored.
         self.resolution_level = 2
+
+        # the additional subsampling that has been applied
+        self.subsampling_level = 16
         
-        # the level at which the probability map is to be saved. 
-        self.target_level = 4
-        
+    def from_highres_to_lowres(self, x, y, slide_factors):
+        new_x = np.int(np.floor(np.float(x) / slide_factors[self.resolution_level] / self.subsampling_level))
+        new_y = np.int(np.floor(np.float(y) / slide_factors[self.resolution_level] / self.subsampling_level))        
+        return new_x, new_y
+    
     def __call__(self, slidename):
 
+        # read information from the original slide
         slide_filename = os.path.join(self.img_orig_folder, '%s.tif' % slidename)
         slide = openslide.open_slide(slide_filename)
         slide_dimensions = slide.level_dimensions
@@ -187,7 +177,47 @@ class WholeSlideGenerator(object):
         w0 = slide_dimensions[0][0]
         h0 = slide_dimensions[0][1]
 
+        w2 = slide_dimensions[2][0]
+        h2 = slide_dimensions[2][1]
         
+        w2_ss = w2 / self.subsampling_level
+        h2_ss = h2 / self.subsampling_level
+        
+        # generate the output image
+        img_out = np.zeros((h2_ss, w2_ss))
+        counts = np.zeros((h2_ss, w2_ss), dtype=np.float)
+        
+        crop_folder = os.path.join(self.prob_map_folder, slidename)
+        imagenames = self.listdir(crop_folder)
+        for i, imagename in enumerate(imagenames):
+            
+            print 'processing %i / %i : %s' % (i, len(imagenames), imagename)
+            
+            # retrieve information from filename
+            # probmap_Test_002_21016_114392_690_874
+            info = os.path.splitext(feature_file)[0].split('_')
+            x = int(info[3])
+            y = int(info[4])
+            width = int(info[5])
+            height = int(info[6])
+
+            new_x, new_y = self.from_highres_to_lowres(x,y,slide_factors)
+                        
+            # read image
+            img = skimage.io.imread(os.path.join(crop_folder, imagename))
+            img_h, img_w = img.shape 
+            
+            img_out[new_y:(new_y + img_h),new_x:(new_x + img_w)] += img 
+            counts[new_y:(new_y + img_h),new_x:(new_x + img_w)] += 1
+
+        counts[counts==0] = 1.0
+        img_out = img_out / counts
+        
+        out_filename = os.path.join(self.output_folder, 'whole_probmap_%s.png' % slidename)
+        print 'writing %s' % out_filename
+        skimage.io.imsave(out_filename, img_out)
+        return
+    
         
 class SlidePredictor(object):
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
