@@ -120,18 +120,17 @@ class ImagePredictor(object):
             probs = self.classifier.predict_proba(X)
             img = probs.reshape((width, height))                  
         else:
-            img_grid = np.ones((width, height))
             col_indices = np.arange(0, width, step=subsample)
             row_indices = np.arange(0, height, step=subsample)
             new_width = len(col_indices)
             new_height = len(row_indices)
             A = np.zeros((width, height))
             B = np.zeros((width, height))
-            A[row_indices,:] = 1
-            B[:,col_indices] = 1
+            A[col_indices,:] = 1
+            B[:,row_indices] = 1
             C = A * B
             Cvec = np.ravel(C)
-            indices = np.where(Cvec>0)
+            indices = np.where(Cvec>0)[0]
             
             #N = X.shape[0]
             #indices = np.arange(0, N, step=subsample)
@@ -140,7 +139,7 @@ class ImagePredictor(object):
             probs = Ys[:,1]
             img = probs.reshape((new_width, new_height))
             
-        return img
+        return img.T
 
 class PBSExporter(object):
     def __init__(self, feature_folder):
