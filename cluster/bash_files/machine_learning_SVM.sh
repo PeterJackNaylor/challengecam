@@ -2,9 +2,9 @@
 
 #$ -cwd # execute the job from the current directory
 #$ -S /bin/bash #set bash environment
-#$ -N Training_RF # name of the job as it will appear in qstat -f
-#$ -o /cbio/donnees/pnaylor/PBS/OUT
-#$ -e /cbio/donnees/pnaylor/PBS/ERR
+#$ -N SVM # name of the job as it will appear in qstat -f
+#$ -o /cbio/donnees/pnaylor/PBS/OUT_SVM
+#$ -e /cbio/donnees/pnaylor/PBS/ERR_SVM
 #$ -l h_vmem=4G
 ##$ -pe orte 2  
 
