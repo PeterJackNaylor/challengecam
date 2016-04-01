@@ -243,11 +243,11 @@ if __name__ ==  "__main__":
 			if int(options.norm1) == 0:
 				X_pred = StandardScaler().fit_transform(X_pred)
 			if int(options.subfactor) != 0:
-				N = X_pred.shape
+				N = X_pred.shape[0]
 				indices = np.arange(0, N, step=int(options.subfactor))
 				X_pred = X_pred[indices,:]
 				Y_pred = Y_pred[indices]
-				
+
 			Y_pred[Y_pred>0] = 1
 
 			Y_hat = clf.predict(X_pred)
