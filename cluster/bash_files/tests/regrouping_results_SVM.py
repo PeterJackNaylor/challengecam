@@ -29,10 +29,10 @@ if __name__ ==  "__main__":
 		try:
 			D = pkl.load(open(fn,'rb'))
 			para = fn.split('.')[0].split('/')[-1].split('_')[1::]
-			Fold = para[1]
-			C = para[3]
-			n_samples = para[5]
-			gamma = para[7]
+			Fold = para[2]
+			C = para[4]
+			n_samples = para[6]
+			gamma = para[8]
 			values = [Fold, C, gamma, n_samples, D['TP'], D['TN'], D['FP'], D['FN']]
 			data.loc[i] = values		
 			i += 1
