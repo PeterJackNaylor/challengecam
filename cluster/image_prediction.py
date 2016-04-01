@@ -31,6 +31,47 @@ class ImagePredictor(object):
         X = np.load(data_filename)
         return X 
     
+    def subsample_slide(self, slidename, subsample):
+        
+        # features
+        slide_folder = os.path.join(self.feature_folder, slidename)
+        feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
+                               os.listdir(slide_folder))
+
+        subsample_output_folder = os.path.join(self.output_folder, 'subsample', slidename)
+        if not os.path.isdir(subsample_output_folder):
+            os.makedirs(subsample_output_folder)
+
+        i = 1
+        info = {}
+        for feature_file in feature_files:
+            
+            start_time = time.time()
+            img_id = os.path.splitext(os.path.basename(feature_file))[0]
+            print 'processing %i / %i : %s' % (i, nb_files, img_id)
+            i += 1
+
+            Xs, new_width, new_height = self.subsample(os.path.join(slide_folder, feature_file), subsample)
+                
+            new_filename = os.path.join(subsample_output_folder, feature_file)
+            np.save(new_filename, Xs)
+            info[img_id] = (new_width, new_height)
+
+            difftime = time.time() - start_time
+            ms = np.int(np.floor((difftime - np.floor(difftime)  )   * 1000))
+            difftime = np.int(np.floor(difftime))
+            print '\t time elapsed: %02i:%02i:%03i' % ( (difftime / 60), (difftime%60), ms)
+
+        info_folder = os.path.join(self.output_folder, 'info')
+        if not os.path.isdir(info_folder):
+            os.makedirs(info_folder)
+        fp = open(os.path.join(info_folder, 'info_%s.pickle' % slidename), 'w')
+        pickle.dump(info, fp)
+        fp.close()
+
+        return 
+
+
     def __call__(self, slidename, write_crop=False, subsample=None, upper_limit=None, 
                  adapt_size=True):
         
@@ -45,9 +86,10 @@ class ImagePredictor(object):
 
         if upper_limit is None:
             upper_limit = len(feature_files)
-
-	nb_files = len(feature_files[:upper_limit])
- 	i = 1
+        
+        nb_files = len(feature_files[:upper_limit])
+        i = 1
+        
         for feature_file in feature_files[:upper_limit]:
             start_time = time.time()
             print 'processing %i / %i : %s' % (i, nb_files, os.path.splitext(os.path.basename(feature_file))[0])
@@ -144,6 +186,40 @@ class ImagePredictor(object):
             
         return img.T
 
+    def subsample(self, data_filename, subsample=None):
+
+        info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
+        x = int(info[2])
+        y = int(info[3])
+        width = int(info[4])
+        height = int(info[5])
+
+        X = self.read_data(data_filename)
+
+        col_indices = np.arange(0, width, step=subsample)
+        row_indices = np.arange(0, height, step=subsample)
+        new_width = len(col_indices)
+        new_height = len(row_indices)
+        A = np.zeros((width, height))
+        B = np.zeros((width, height))
+        A[col_indices,:] = 1
+        B[:,row_indices] = 1
+        C = A * B
+        Cvec = np.ravel(C)
+        indices = np.where(Cvec>0)[0]
+        
+        #N = X.shape[0]
+        #indices = np.arange(0, N, step=subsample)
+        Xs = X[indices,:]
+        
+        #Ys = self.classifier.predict_proba(Xs)
+        #probs = Ys[:,1]
+        #img = probs.reshape((new_width, new_height))
+            
+        return Xs, new_width, new_height
+
+    
+    
 
 class WholeSlideGenerator(object):
     def __init__(self, prob_map_folder, img_orig_folder, output_folder):
@@ -233,6 +309,7 @@ class SlidePredictor(object):
 
         self.ip = ImagePredictor(self.classifier_name, self.feature_folder, 
                                  self.output_folder, self.img_orig_folder)
+
 
 
     def process_slide(self, slidename):
@@ -446,6 +523,8 @@ if __name__ ==  "__main__":
                       help="name of the slide (without extension)")
     parser.add_option("--slide_number", dest="slide_number",
                       help="number of the slide")
+    parser.add_option("--sub_sample_folder", dest="sub_sample_folder",
+                      help="if not none, then only do subsampling, no prediction.")
     
     (options, args) = parser.parse_args()
 
@@ -478,9 +557,12 @@ if __name__ ==  "__main__":
     else:
         raise ValueError('either slide number or slide name must be given.')
 
-    IP(slide_name, subsample=subsample_factor,
-       upper_limit=upper_limit)
-    
+    if options.sub_sample_folder is None:
+        IP(slide_name, subsample=subsample_factor,
+           upper_limit=upper_limit)
+    else:
+        IP.subsample_slide(slide_name, subsample_factor)
+                
     print 'DONE !'
     
     
