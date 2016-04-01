@@ -3,8 +3,8 @@
 #$ -cwd # execute the job from the current directory
 #$ -S /bin/bash #set bash environment
 #$ -N SVM # name of the job as it will appear in qstat -f
-#$ -o /cbio/donnees/pnaylor/PBS/OUT_SVM
-#$ -e /cbio/donnees/pnaylor/PBS/ERR_SVM
+#$ -o /share/data40T/pnaylor/PBS/OUT_SVM
+#$ -e /share/data40T/pnaylor/PBS/ERR_SVM
 #$ -l h_vmem=4G
 ##$ -pe orte 2  
 
@@ -26,7 +26,7 @@ KSAMPLES=1
 KERNEL=rbf
 SUBSAMPLE_FACTOR=16
 
-source $HOME/.bash_profile
+source /share/data40T/pnaylor/.bash_profile
 
 FILE=/share/data40T_v2/challengecam_results/settings_for_machine_learning_SVM.txt # fichier csv (delimiter=' ') où la premiere colonne est la valeur de $PBS_ARRAYID, la seconde est le nom du programme, et les autres les différents paramètres à faire passer au code python
 FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f2) # la partie gauche est pour chopper la ligne numéro $PBS_ARRAYID
