@@ -215,7 +215,7 @@ if __name__ ==  "__main__":
 
 	clf.fit(X_train,Y_train)
 	if int(options.save) == 0:
-		file_name = "classifierSVM_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+".pickle"
+		file_name = "classifierSVM_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+"_gamma_"+options.gamma+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time
@@ -247,7 +247,7 @@ if __name__ ==  "__main__":
 			D['FN'] += FN
 		except:
 			print sample_name+" was not possible"
-	file_name = "scoreSVM_fold_"+options.k_folds+"_tree_"+options.n_tree+"_mtry_"+options.m_try+"_boot_"+options.n_bootstrap+"_nsample_"+options.n_samples+".pickle"
+	file_name = "scoreSVM_fold_"+options.k_folds+"_C_"+options.c+"_nsample_"+options.n_samples+"_gamma_"+options.gamma+".pickle"
 	image_sauv_name_score = os.path.join(saving_location , file_name)
 
 
