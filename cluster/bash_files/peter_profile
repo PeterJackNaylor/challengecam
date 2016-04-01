@@ -3,7 +3,7 @@ export LD_LIBRARY_PATH=/cbio/donnees/nvaroquaux/.local/lib:$LD_LIBRARY_PATH
 
 export PATH=/cbio/donnees/nvaroquaux/.local/bin:$PATH
 
-export ILOG_LICENSE_FILE=/cbio/donnees/nshervashidze/.local/proprietary/cplex/access.ilm
+#export ILOG_LICENSE_FILE=/cbio/donnees/nshervashidze/.local/proprietary/cplex/access.ilm
 
 #export PYTHONPATH=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster:/share/data40T/pnaylor/Cam16/scripts/challengecam/PythonPatch:/share/apps/user_apps/smil_0.8.1/lib/Smil/
 export PYTHONPATH=/share/apps/user_apps/challengecam/cluster:/share/apps/user_apps/challengecam/RandomForest_Peter:/share/apps/user_apps/challengecam/PythonPatch:/share/apps/user_apps/smil_0.8.1/lib/Smil

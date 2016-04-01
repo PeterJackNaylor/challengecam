@@ -3,8 +3,8 @@
 #$ -cwd # execute the job from the current directory
 #$ -S /bin/bash #set bash environment
 #$ -N SlideClass # name of the job as it will appear in qstat -f
-#$ -o /cbio/donnees/twalter/PBS/OUT
-#$ -e /cbio/donnees/twalter/PBS/ERR
+#$ -o /share/data40T_v2/twalter/PBS/OUT
+#$ -e /share/data40T_v2/twalter/PBS/ERR
 #$ -l h_vmem=4G
 
 ## others optional options
