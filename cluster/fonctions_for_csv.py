@@ -1,4 +1,11 @@
 # -*- coding: cp1252 -*-
+
+"""
+python --output /share/data40T_v2/challengecam_results --ProbMapFolder  --slideFolder /share/data40T/pnaylor/Cam16/Test --CSVFolder /share/data40T_v2/challengecam_results/ResultatCSV
+"""
+
+
+
 """
 This file contains functions for generating the .csv file containing the results of prediction for the cahllenge CAMELYON16.
 """
@@ -115,7 +122,7 @@ if __name__ ==  "__main__":
     data = pd.DataFrame(list_max_proba, columns=('Confidence','X coordinate','Y coordinate'))
     
     if not options.output is None:
-        data.to_csv(options.output, index=False
+        data.to_csv(options.output, index=False)
 
     if int(options.plot) == 0:
         npy_matrix = np.transpose(image.getNumArray())
