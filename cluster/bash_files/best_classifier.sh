@@ -16,11 +16,11 @@
 ##$ -tc 160 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
 
-PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/best_classifier.py
+PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/bash_files/best_classifier.py
 SOURCE=/share/data40T_v2/challengecam_results/train/
-n_samples=10000
+n_samples=5000
 version=default
-n_tree=2000
+n_tree=1000
 m_try=50
 bootstrap=10000
 saving=0  ### it is going to be saved

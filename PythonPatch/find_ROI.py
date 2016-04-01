@@ -524,18 +524,21 @@ def subsample(Y,version,version_para):
     elif version == 'kmeans':
         ## this is a purely random susampling
         ## checking for right arguments
-        pdb.set_trace()
+    #    pdb.set_trace()
         if 'n_sub' not in version_para:
             raise NameError("missing parameter n_sub in input dictionnary")
         else:
             n_val = len(val)
             n_sub = version_para['n_sub'] / n_val
+	    if n_sub == 0:
+		n_sub = 1
         if 'k' not in version_para:
             raise NameError("Missing parameter k in input dictionnary")
         else:
             k = version_para['k']
         if 'X' not in version_para:
             raise NameError('Missing data X for kmeans clustering')
+	else:
             X = version_para['X']
 
         res = []
@@ -546,13 +549,11 @@ def subsample(Y,version,version_para):
             groups = kmeans.fit_predict(X_temp)
             #val_, freq_ = np.unique(groups, return_counts=True)
             for id_group in range(50):
-                
                 index_subgroup = np.where(groups == id_group)[0]
                 freq_ = len(index_subgroup)
-
                 index_to_pic = index_val[index_subgroup]
                 random.shuffle(index_to_pic)
-                res += list(index_to_pic[min(freq_,n_sub)])
+                res += list(index_to_pic[0:min(freq_,n_sub)])
     return res
 
 

@@ -128,7 +128,7 @@ if __name__ ==  "__main__":
 	Normal_slides_train  = from_list_string_to_list_Tumor(all_para[ i*11 + 8 ],all_para[ i*11 + 7 ])
 	Tumor_slides_train   = from_list_string_to_list_Tumor(all_para[ i*11 + 10],all_para[ i*11 + 9 ])
 
-	training_names = Normal_slides_train + Tumor_slides_train
+	training_names = Tumor_slides_train + Normal_slides_train
 	sample_name = training_names[0]
 	image_sauv_name_pickle = os.path.join(data_location ,sample_name, sample_name  + ".pickle")
 	image_sauv_name_npy    = os.path.join(data_location ,sample_name, sample_name  + ".npy")
@@ -146,7 +146,6 @@ if __name__ ==  "__main__":
 		index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
 		X_temp = X_temp[index_kmean,:]
 		Y_temp = Y_temp[index_kmean]
-	
 	step = int(options.kmean_k) * int(options.kmean_n)
 	n_train = len(training_names) * step
 	p_train = X_temp.shape[1]
@@ -181,7 +180,6 @@ if __name__ ==  "__main__":
 				X_temp = X_temp[index_kmean,:]
 				Y_temp = Y_temp[index_kmean]
 			n_temp = X_temp.shape[0]
-			pdb.set_trace()
 			X_train[ i * step : i * step + n_temp,: ] = X_temp[:,:]
 			Y_train[ i * step : i * step + n_temp] = Y_temp[:]
 		except:
