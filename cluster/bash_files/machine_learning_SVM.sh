@@ -33,6 +33,5 @@ FIELD2=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f3) # la partie
 FIELD3=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) # sachant que le séparateur est l'espace
 FIELD4=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f5)
 FIELD5=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f6)
-FIELD6=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f7)
 
 python $PYTHON_FILE --source $CAM16 --kfold_file $KFOLD --fold $FIELD1 --n_samples $FIELD2 --version $FIELD3 --norm1 0 --penalty $FIELD4 --save 1  --output $OUTPUT  --kmean_k $KGROUPS --kmean_n $KSAMPLES --kernel $KERNEL --gamma $FIELD5
