@@ -82,6 +82,10 @@ if __name__ ==  "__main__":
 					  help="sub sample Version",metavar="string")
 	parser.add_option("--norm1",dest="norm1",default="0",
 					  help="Normalization scheme slide by slide",metavar="int")
+	parser.add_option("--kernel",dest="kernel",
+					  help="kernel to be used",metavar="kernel")
+	parser.add_option("--gamma",dest="gamma",
+					  help="value of the hyper parameter for the gaussian kernel",metavar="int")
 	parser.add_option("-c","--penalty",dest="c",
 					  help="value of the penalty in the SVM",metavar="int")
 	parser.add_option("--save", dest="save",default="1",
@@ -101,6 +105,8 @@ if __name__ ==  "__main__":
 	print "n_samples:   |"+options.n_samples
 	print "version:     |"+options.version
 	print "norm1:       |"+options.norm1
+	print "kernel:      |"+options.kernel
+	print "gamma        |"+options.gamma
 	print "C:           |"+options.c
 	print "saving:      |"+options.save
 	print "output folde:|"+options.output
@@ -201,8 +207,8 @@ if __name__ ==  "__main__":
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
-	clf = svm.SVC(C=float(options.c), kernel='linear',
-				  degree=3, gamma='auto',
+	clf = svm.SVC(C=float(options.c), kernel=options.kernel,
+				  degree=3, gamma=options.gamma,
 				  coef0=0.0, shrinking=True, probability=True,
 				  tol=0.001, cache_size=200, class_weight='balanced',
 				  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)

@@ -545,7 +545,7 @@ def subsample(Y,version,version_para):
         for values,frequency in iter_obj:
             index_val = np.where(Y == values)[0]
             X_temp = X[index_val,:]
-            kmeans = KMeans(init='k-means++', n_clusters=k, n_init=10)
+            kmeans = KMeans(init='k-means++', n_clusters=k, n_init=1)
             groups = kmeans.fit_predict(X_temp)
             #val_, freq_ = np.unique(groups, return_counts=True)
             for id_group in range(50):
