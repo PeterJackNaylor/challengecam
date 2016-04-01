@@ -51,7 +51,8 @@ class ImagePredictor(object):
         for feature_file in feature_files[:upper_limit]:
             start_time = time.time()
             print 'processing %i / %i : %s' % (i, nb_files, os.path.splitext(os.path.basename(feature_file))[0])
-            
+            i += 1
+ 
             if adapt_size:
                 img = self.process_file_small(os.path.join(slide_folder, feature_file), subsample)
             else: 
