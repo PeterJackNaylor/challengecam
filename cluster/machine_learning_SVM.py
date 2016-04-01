@@ -152,7 +152,10 @@ if __name__ ==  "__main__":
 		index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
 		X_temp = X_temp[index_kmean,:]
 		Y_temp = Y_temp[index_kmean]
-	step = int(options.kmean_k) * int(options.kmean_n)
+	if int(options.kmean_k) !=0:
+		step = int(options.kmean_k) * int(options.kmean_n)
+	else:
+		step = int(options.n_samples)
 	n_train = len(training_names) * step
 	p_train = X_temp.shape[1]
 
@@ -203,7 +206,7 @@ if __name__ ==  "__main__":
 
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-	print 'With dim X_train = %d, %d' %X_train.shapeS
+	print 'With dim X_train = %d, %d' %X_train.shape
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	

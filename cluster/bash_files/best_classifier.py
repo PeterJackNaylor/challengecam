@@ -65,6 +65,14 @@ if __name__ ==  "__main__":
 					  help="number of jobs to pass to randomforest",metavar="int")
 	parser.add_option("--model",dest="model",
 					  help="Model to be used",metavar="str")
+	parser.add_option("--kernel",dest="kernel",
+					  help="kernel to be used",metavar="kernel")
+	parser.add_option("--kmean_k",default="0",dest="kmean_k",
+					  help="number of clusters of the k mean",metavar="int > 0 ")
+	parser.add_option("--kmean_n",dest="kmean_n",
+					  help="downsampling number with the k mean algorithm",metavar="int")
+	parser.add_option("--gamma",dest="gamma",
+					  help="value of the hyper parameter for the gaussian kernel",metavar="int")
 	(options, args) = parser.parse_args()
 
 	print "n_samples:   |"+options.n_samples
@@ -79,7 +87,10 @@ if __name__ ==  "__main__":
 	print "n_jobs:      |"+options.n_jobs
 	print "norm1:       |"+options.norm1
 	print "model:       |"+options.model
-
+	print "kernel:      |"+options.kernel
+	print "gamma        |"+options.gamma
+	print "kmeans k    :|"+options.kmean_k
+	print "kmean downsa:|"+options.kmean_n
 	version_para = { 'n_sub': int(options.n_samples) }
 
 	data_location   = options.folder_source
@@ -101,16 +112,26 @@ if __name__ ==  "__main__":
 
 	X_temp = X_temp[index,:]
 	Y_temp = Y_temp[index]
+	if int(options.kmean_k) != 0:
+		para_kmean['X'] = X_temp
+		index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
+		X_temp = X_temp[index_kmean,:]
+		Y_temp = Y_temp[index_kmean]
 
-	n_train = len(training_names) * int(options.n_samples)
+	if int(options.kmean_k) !=0:
+		step = int(options.kmean_k) * int(options.kmean_n)
+	else:
+		step = int(options.n_samples)
+	n_train = len(training_names) * step
 	p_train = X_temp.shape[1]
 
 
 	X_train = np.zeros(shape=(n_train, p_train))
-	X_train[0:int(options.n_samples),:] = X_temp
+	n_temp = X_temp.shape[0]
+	X_train[0:n_temp,:] = X_temp
 
 	Y_train = np.zeros(n_train)
-	Y_train[0:int(options.n_samples)] = Y_temp
+	Y_train[0:n_temp] = Y_temp
 
 	i = 0
 	for sample_name in training_names[1::]:
@@ -128,9 +149,14 @@ if __name__ ==  "__main__":
 			Y_temp = Y_temp[index]
 			if int(options.norm1) == 0:
 				X_temp = StandardScaler().fit_transform(X_temp)
-
-			X_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples),: ] = X_temp[:,:]
-			Y_train[ i * int(options.n_samples) : (i+1) * int(options.n_samples) ] = Y_temp[:]
+			if int(options.kmean_k) != 0:
+				para_kmean['X'] = X_temp
+				index_kmean = subsample(Y_temp, 'kmeans' , para_kmean)
+				X_temp = X_temp[index_kmean,:]
+				Y_temp = Y_temp[index_kmean]
+			n_temp = X_temp.shape[0]
+			X_train[ i * step : i * step + n_temp,: ] = X_temp[:,:]
+			Y_train[ i * step : i * step + n_temp] = Y_temp[:]
 		except:
 			print sample_name+" was not possible"
 
