@@ -28,7 +28,7 @@ if __name__ ==  "__main__":
 	for fn in files:
 		try:
 			D = pkl.load(open(fn,'rb'))
-			para = fn.split('.')[0].split('/')[-1].split('_')[1::]
+			para = fn.split('/')[-1][:-7].split('_')[1::]
 			Fold = para[2]
 			C = para[4]
 			n_samples = para[6]
