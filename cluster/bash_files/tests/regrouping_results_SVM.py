@@ -19,7 +19,7 @@ if __name__ ==  "__main__":
 
 	(options, args) = parser.parse_args()
 
-	source_folder = os.path.join(options.folder_source, "score_*.pickle")
+	source_folder = os.path.join(options.folder_source, "scoreSVM_*.pickle")
 #	output_folder 
 	data = pd.DataFrame(columns=('Fold','C','gamma','n_samples', 'TP', 'TN', 'FP', 'FN'))
 
