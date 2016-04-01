@@ -21,8 +21,8 @@ OUTPUT=/share/data40T_v2/challengecam_results/SVM/
 spe_tag=__
 PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/machine_learning_SVM.py
 
-KGROUPS=30
-KSAMPLES=2
+KGROUPS=50
+KSAMPLES=1
 KERNEL=rbf
 
 source $HOME/.bash_profile

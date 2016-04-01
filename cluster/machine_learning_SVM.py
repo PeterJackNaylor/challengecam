@@ -203,12 +203,12 @@ if __name__ ==  "__main__":
 
 	print 'Setting up X_train:'
 	print '\t%02i:%02i:%02i' % (diff_time/3600, (diff_time%3600)/60, diff_time%60)
-	print 'With dim X_train = %d, %d' %X_train.shape
+	print 'With dim X_train = %d, %d' %X_train.shapeS
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	
 	clf = svm.SVC(C=float(options.c), kernel=options.kernel,
-				  degree=3, gamma=options.gamma,
+				  degree=3, gamma=float(options.gamma),
 				  coef0=0.0, shrinking=True, probability=True,
 				  tol=0.001, cache_size=200, class_weight='balanced',
 				  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
