@@ -178,12 +178,7 @@ if __name__ ==  "__main__":
 	print 'With n_ones = %d' %len(np.where(Y_train != 0)[0])
 	start_time = time.time()
 	if options.model == 'svm':
-		clf = svm.SVC(C=float(options.c), kernel=options.model,
-					  degree=3, gamma=float(options.gamma),
-					  coef0=0.0, shrinking=True, probability=True,
-					  tol=0.001, cache_size=200, class_weight='balanced',
-					  verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
-
+		clf = svm.SVC(C=float(options.c),kernel=options.kernel,degree=3, gamma=float(options.gamma),coef0=0.0, shrinking=True, probability=True,tol=0.001, cache_size=200, class_weight='balanced',verbose=False, max_iter=-1, decision_function_shape=None, random_state=None)
 		clf.fit(X_train,Y_train)
 	elif options.model == "forest":
 		clf = PeterRandomForestClassifier(n_estimators = int(options.n_tree), max_features = int(options.m_try),

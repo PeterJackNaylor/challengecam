@@ -122,7 +122,7 @@ if __name__ ==  "__main__":
     data = pd.DataFrame(list_max_proba, columns=('Confidence','X coordinate','Y coordinate'))
     
     if not options.output is None:
-        data.to_csv(options.output, index=False)
+        data.to_csv(os.path.join(options.output,"Evaluation1"), index=False)
 
     if int(options.plot) == 0:
         npy_matrix = np.transpose(image.getNumArray())

@@ -38,7 +38,6 @@ if __name__ ==  "__main__":
 			i += 1
 		except:
 			print fn.split('/')[-1] + ' is corrupted'
-	data = data[data.n_samples != '10000']
 	data['Precision'] = data['TP'] / (data['TP'] + data['FP'])
 	data['Recall']    = data['TP'] / (data['TP'] + data['FN'])
 	data['F1']        = 2 * data['Precision'] * data['Recall'] / (data['Precision'] + data['Recall'])
