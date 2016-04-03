@@ -24,7 +24,7 @@ if __name__ ==  "__main__":
 		id_test = '%03i' % i
 		ProbMap = os.path.join(options.ProbMap, "whole_probmap_Test_"+id_test+".png")
 		SlideName = os.path.join(options.SlideFolder, "Test_"+id_test+".tif")
-		CsvName = os.path.join(options.SlideFolder, "Test_"+id_test+".csv")
+		CsvName = os.path.join(options.CSVFolder, "Test_"+id_test+".csv")
 		
 		f.write("__"+str(line) + "__ "+ProbMap+" "+SlideName+" "+CsvName+"\n")
 		line += 1

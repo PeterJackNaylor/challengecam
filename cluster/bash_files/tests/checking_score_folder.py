@@ -37,10 +37,10 @@ if __name__ ==  "__main__":
 		FIELD2 = paras[2]
 		FIELD3 = paras[3]
 		FIELD4 = paras[4]
-		FIELD5 = paras[5]
-		FIELD6 = paras[6].split('\n')[0]
-
-		file_name = "score_fold_"+FIELD1+"_tree_"+FIELD4+"_mtry_"+FIELD5+"_boot_"+FIELD6+"_nsample_"+FIELD2+".pickle"
+		FIELD5 = paras[5].split('\n')[0]
+#		FIELD6 = paras[6].split('\n')[0]
+		file_name = "scoreSVM_fold_"+FIELD1+"_C_"+FIELD4+"_nsample_"+FIELD2+"_gamma_"+FIELD5+".pickle"
+#		file_name = "score_fold_"+FIELD1+"_tree_"+FIELD4+"_mtry_"+FIELD5+"_boot_"+FIELD6+"_nsample_"+FIELD2+".pickle"
 
 		try:
 			path = os.path.join(folder_save,file_name)

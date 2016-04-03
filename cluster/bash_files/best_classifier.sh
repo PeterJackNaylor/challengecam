@@ -18,7 +18,7 @@
 
 PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/bash_files/best_classifier.py
 SOURCE=/share/data40T_v2/challengecam_results/train/
-n_samples=5000
+n_samples=10000
 version=default
 n_tree=1000
 m_try=50
@@ -26,8 +26,11 @@ bootstrap=10000
 saving=0  ### it is going to be saved
 OUTPUT=/share/data40T_v2/challengecam_results/training/
 JOBS=1
-C=1.0
-model=forest
+C=2.0
+gamma=0.1
+kernel=rbf
+kmean_k=20
+kmean_n=4
+model=svm
 
-
-python $PYTHON_FILE --source $SOURCE --n_samples $n_samples --version $version --n_tree $n_tree --m_try $m_try --bootstrap $bootstrap --save $saving --output $OUTPUT --n_jobs $JOBS -c $C --model $model
+python $PYTHON_FILE --source $SOURCE --n_samples $n_samples --version $version --n_tree $n_tree --m_try $m_try --bootstrap $bootstrap --save $saving --output $OUTPUT --n_jobs $JOBS -c $C --gamma $gamma --kernel $kernel --model $model --kmean_k $kmean_k --kmean_n $kmean_n

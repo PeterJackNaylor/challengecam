@@ -93,6 +93,8 @@ if __name__ ==  "__main__":
 	print "kmean downsa:|"+options.kmean_n
 	version_para = { 'n_sub': int(options.n_samples) }
 
+	para_kmean = { 'n_sub':int(options.kmean_n), 'k':int(options.kmean_k)}
+
 	data_location   = options.folder_source
 	saving_location = options.output
 	
@@ -191,7 +193,7 @@ if __name__ ==  "__main__":
 		clf.fit(X_train,Y_train)
 	if int(options.save) == 0:
 
-		file_name = "best_classifier"+".pickle"
+		file_name = "best_classifier_SVM"+".pickle"
 		pickle_file = open( os.path.join(saving_location, file_name) , "wb")
 		pickle.dump(clf, pickle_file)
 	diff_time = time.time() - start_time

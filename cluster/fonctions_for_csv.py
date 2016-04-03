@@ -1,7 +1,7 @@
 # -*- coding: cp1252 -*-
 
 """
-python --output /share/data40T_v2/challengecam_results --ProbMapFolder  --slideFolder /share/data40T/pnaylor/Cam16/Test --CSVFolder /share/data40T_v2/challengecam_results/ResultatCSV
+python --output /share/data40T_v2/challengecam_results --ProbMapFolder /share/data40T_v2/challengecam_results/probmap/pred_data_set/whole_slide --slideFolder /share/data40T/pnaylor/Cam16/Test --CSVFolder /share/data40T_v2/challengecam_results/ResultatCSV
 """
 
 
