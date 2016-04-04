@@ -89,7 +89,7 @@ def readCSVContent(csvDIR):
     """
     Xcorr, Ycorr, Probs = ([] for i in range(3))
     csv_lines = open(csvDIR,"r").readlines()
-    for i in range(len(csv_lines)):
+    for i in range(1,len(csv_lines)):
         line = csv_lines[i]
         elems = line.rstrip().split(',')
         Probs.append(float(elems[0]))
@@ -214,8 +214,8 @@ def plotFROC(total_FPs, total_sensitivity):
     
 if __name__ == "__main__":
 
-    mask_folder = "...\\Camelyon16\\Ground_Truth\\Masks"
-    result_folder = "...\\Camelyon16\\Results"
+    mask_folder = '/media/naylor/Peter-HD/data/Tumor_Mask'#"...\\Camelyon16\\Ground_Truth\\Masks"
+    result_folder = '/home/naylor/Bureau/Temp/whole_slide' #"...\\Camelyon16\\Results"
     result_file_list = []
     result_file_list += [each for each in os.listdir(result_folder) if each.endswith('.csv')]
     
@@ -254,12 +254,3 @@ if __name__ == "__main__":
     
     # plot FROC curve
     plotFROC(total_FPs, total_sensitivity)
-
-  
-            
-        
-        
-        
-        
-        
-        

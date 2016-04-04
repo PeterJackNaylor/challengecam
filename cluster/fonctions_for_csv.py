@@ -2,6 +2,11 @@
 
 """
 python --output /share/data40T_v2/challengecam_results --ProbMapFolder /share/data40T_v2/challengecam_results/probmap/pred_data_set/whole_slide --slideFolder /share/data40T/pnaylor/Cam16/Test --CSVFolder /share/data40T_v2/challengecam_results/ResultatCSV
+
+PREF_ID=Normal_001
+PREF=Normal
+python /home/naylor/Bureau/challengecam/cluster/fonctions_for_csv.py -f /home/naylor/Bureau/Temp/whole_slide/whole_probmap_$PREF_ID.png -r 2 --disk_size 5 --sigma 5 --plot 0 --subsampling 16 --slide_name /media/naylor/Peter-HD/data/$PREF/$PREF_ID.tif --output /home/naylor/Bureau/Temp/image_results_on_train/Results_$PREF_ID.csv
+
 """
 
 
@@ -53,7 +58,7 @@ def get_max_proba_list_ref_imagette(imagette_smil, subsampling, res, slide_name)
     scale = slide.level_downsamples[res] * subsampling
     
     for i in range(len(sel[0])):
-        list_max_proba += [[proba_numpy_arr[sel][i]/float(255), sel[1][i] * scale,  sel[0][i] * scale]]
+        list_max_proba += [[proba_numpy_arr[sel][i]/float(255), int(sel[1][i] * scale),  int(sel[0][i] * scale)]]
     return list_max_proba
 ##------------------------------------------------------------------------------------------------------------------------------------------------
 def get_max_proba_list_ref_slide(imagette_smil,  coords):
@@ -122,7 +127,7 @@ if __name__ ==  "__main__":
     data = pd.DataFrame(list_max_proba, columns=('Confidence','X coordinate','Y coordinate'))
     
     if not options.output is None:
-        data.to_csv(os.path.join(options.output,"Evaluation1"), index=False)
+        data.to_csv(options.output, index=False,header=False)
 
     if int(options.plot) == 0:
         npy_matrix = np.transpose(image.getNumArray())
@@ -132,13 +137,13 @@ if __name__ ==  "__main__":
         slide = op.open_slide(slide_name)
         scale = slide.level_downsamples[res] * samp
 
-        x = np.array(data['X coordinate']) / scale
-        y = np.array(data['Y coordinate']) / scale
+        x = np.array(data['X coordinate'] / scale)
+        y = np.array(data['Y coordinate'] / scale)
 
         colors = np.array(data['Confidence'])
 
         plt.scatter(x, y, c=colors)
-        plt.show()
+        plt.savefig(options.file.split('.')[0] +"_targets" + '.png')
 
 
 
