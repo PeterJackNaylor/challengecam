@@ -5,6 +5,7 @@ import openslide as op
 import cPickle as pkl
 import pdb
 import skimage.io
+import numpy as np
 if __name__ ==  "__main__":
 
 	parser = OptionParser()
@@ -40,13 +41,13 @@ if __name__ ==  "__main__":
 		path_file = os.path.join(slide_folder, pref, slide_name + ".tif")
 		slide = op.open_slide(path_file)
 		image = slide.read_region((0,0),resolution,slide.level_dimensions[resolution])
-		skimage.io.save(image, os.path.join(output_folder, slide_name + "_resolution_"+str(resolution)+"_.png"))
+		skimage.io.save(os.path.join(output_folder, slide_name + "_resolution_"+str(resolution)+"_.png"), np.array(image))
 
 		if pref == "Tumor":
 			path_file_GT = os.path.join(slide_folder, pref + "_Mask", slide_name + "_Mask" + ".tif")
 			slide_GT = op.open_slide(path_file_GT)
 			image_GT = slide_GT.read_region((0,0),resolution,slide_GT.level_dimensions[resolution])
-			skimage.io.save(image_GT, os.path.join(output_folder, slide_name + "_GT_resolution_"+str(resolution)+"_.png"))
+			skimage.io.save(os.path.join(output_folder, slide_name + "_GT_resolution_"+str(resolution)+"_.png"), np.array(image_GT))
 			
 
 
