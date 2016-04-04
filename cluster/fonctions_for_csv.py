@@ -48,10 +48,14 @@ def get_max_proba_list_ref_imagette(imagette_smil, subsampling, res, slide_name)
     """
     list_max_proba = []
     im_maxima = sp.Image(imagette_smil)
+    im_single_maxima = sp.Image(imagette_smil)
     se = uf.set_structuring_element('V6',  1)
     sp.maxima(imagette_smil,  im_maxima,  se)
+    sp.dist(im_maxima, im_single_maxima, se)
+    sp.maxima(im_single_maxima, im_maxima, se)
     im_numpy_arr = np.uint8(np.transpose(im_maxima.getNumArray()))
     proba_numpy_arr = np.uint8(np.transpose(imagette_smil.getNumArray()))
+    
     sel = np.where(im_numpy_arr==255)
 
     slide = op.open_slide(slide_name)
