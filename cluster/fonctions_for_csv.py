@@ -147,7 +147,7 @@ if __name__ ==  "__main__":
         colors = np.array(data['Confidence'])
 
         plt.scatter(x, y, c=colors)
-        plt.savefig(options.file.split('.')[0] +"_targets" + '.png')
+        plt.savefig(options.output.split('.')[0] +"_targets" + '.png')
 
 
 
