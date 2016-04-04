@@ -16,9 +16,10 @@
 #$ -tc 130 # nbre de job qui peuvent fonctionner en parallèle ensemble
 
 RES=2
-DISK_SIZE=5
+DISK_SIZE=7
 SUBSAMPLING=16
-SIGMA=5
+SIGMA=7
+H_value=30
 
 spe_tag=__
 PYTHON_FILE=/share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/fonctions_for_csv.py
@@ -31,4 +32,4 @@ FIELD1=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f3) ## slide na
 FIELD2=$(grep "$spe_tag$SGE_TASK_ID$spe_tag " $FILE | cut -d' ' -f4) ## csv file name
 
 
-python $PYTHON_FILE -f $FIELD0 -r $RES --disk_size $DISK_SIZE --plot 1 --sigma $SIGMA --subsampling $SUBSAMPLING --slide_name $FIELD1 --output $FIELD2
+python $PYTHON_FILE -f $FIELD0 -r $RES --disk_size $DISK_SIZE --plot 1 --sigma $SIGMA --subsampling $SUBSAMPLING --slide_name $FIELD1 --output $FIELD2 --h_dyn $H_value
