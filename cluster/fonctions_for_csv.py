@@ -35,6 +35,12 @@ def preprocessing(image, disk_size=5, sigma=5):
 
     return image 
 
+def homotopic_marker(im_bin, im_out):
+    """
+    Computed homotopic marker of im_bin
+    """
+    se = sp.CompStrElt(sp.StrElt(0, [0, 1]), sp.StrElt(0, [5,]))
+    sp.fullThin(im_bin, se(8), im_out)
 
 def get_max_proba_list_ref_imagette(imagette_smil, h_value, subsampling, res, slide_name):
     """
@@ -53,10 +59,10 @@ def get_max_proba_list_ref_imagette(imagette_smil, h_value, subsampling, res, sl
     sp.hMaxima(imagette_smil,  h_value, im_maxima,  se)
     # in case of large flat maxima, keep only central points
     sp.dist(im_maxima, im_single_maxima, se)
-    sp.maxima(im_single_maxima, im_maxima, se)
-    im_numpy_arr = np.uint8(np.transpose(im_maxima.getNumArray()))
+    sp.maxima(im_single_maxima, im_maxima, se)    
+    homotopic_marker(im_maxima, im_single_maxima)
+    im_numpy_arr = np.uint8(np.transpose(im_single_maxima.getNumArray()))
     proba_numpy_arr = np.uint8(np.transpose(imagette_smil.getNumArray()))
-
     sel = np.where(im_numpy_arr==255)
 
     slide = op.open_slide(slide_name)
@@ -125,10 +131,9 @@ if __name__ ==  "__main__":
     res = int(options.res)
     slide_name = options.slide_name
     samp = int(options.sampling)
-    h_value = options.h
+    h_value = int(options.h)
     image = sp.Image(options.file,"UINT8")
     image = preprocessing(image, disk_size=int(options.disk_size), sigma=int(options.sigma))
-
     list_max_proba = get_max_proba_list_ref_imagette(image, h_value, samp, res, slide_name)
 
     data = pd.DataFrame(list_max_proba, columns=('Confidence','X coordinate','Y coordinate'))
@@ -150,7 +155,8 @@ if __name__ ==  "__main__":
         colors = np.array(data['Confidence'])
 
         plt.scatter(x, y, c=colors)
-        plt.savefig(options.output.split('.')[0] +"_targets" + '.png')
+        plt.show()
+        #plt.savefig(options.output.split('.')[0] +"_targets" + '.png')
 
 
 
