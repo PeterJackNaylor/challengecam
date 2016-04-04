@@ -36,7 +36,7 @@ def preprocessing(image, disk_size=5, sigma=5):
     return image 
 
 
-def get_max_proba_list_ref_imagette(imagette_smil, subsampling, res, slide_name):
+def get_max_proba_list_ref_imagette(imagette_smil, h_value, subsampling, res, slide_name):
     """
     Enables to compute the list of [conf, x, y] of the imagette smil (reference: imagette).
 
@@ -56,7 +56,7 @@ def get_max_proba_list_ref_imagette(imagette_smil, subsampling, res, slide_name)
     sp.maxima(im_single_maxima, im_maxima, se)
     im_numpy_arr = np.uint8(np.transpose(im_maxima.getNumArray()))
     proba_numpy_arr = np.uint8(np.transpose(imagette_smil.getNumArray()))
-    
+
     sel = np.where(im_numpy_arr==255)
 
     slide = op.open_slide(slide_name)
@@ -105,6 +105,8 @@ if __name__ ==  "__main__":
                       help="Should plot?")
     parser.add_option("--slide_name",dest="slide_name",
                       help=" slide name, tiff file")
+    parser.add_option("--h_dyn",dest="h",
+                      help=" h for the dynamic processing")
 
     (options, args) = parser.parse_args()
 
@@ -123,11 +125,11 @@ if __name__ ==  "__main__":
     res = int(options.res)
     slide_name = options.slide_name
     samp = int(options.sampling)
-
+    h_value = options.h
     image = sp.Image(options.file,"UINT8")
     image = preprocessing(image, disk_size=int(options.disk_size), sigma=int(options.sigma))
 
-    list_max_proba = get_max_proba_list_ref_imagette(image, samp, res, slide_name)
+    list_max_proba = get_max_proba_list_ref_imagette(image, h_value, samp, res, slide_name)
 
     data = pd.DataFrame(list_max_proba, columns=('Confidence','X coordinate','Y coordinate'))
     
