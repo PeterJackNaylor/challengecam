@@ -28,7 +28,7 @@ if __name__ ==  "__main__":
 	resolution = int(options.resolution)
 	slide_folder = options.slide_folder
 	output_folder = options.output
-	files = glob.glob(os.path.join(options.source), "*")
+	files = glob.glob(os.path.join(options.source, "*"))
 
 
 	for fn in files:
