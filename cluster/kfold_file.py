@@ -19,20 +19,16 @@ if __name__ ==  "__main__":
 	#### Kfold 
 
 	input_2 = sys.argv[2]
-	#### folder address
+	#### output address
 
-	input_3 = sys.argv[3]
-	#### version name
 
-	folder_Normal = os.path.join(input_2,'Normal')
-	folder_Tumor  = os.path.join(input_2,'Tumor')
-	file_name = os.path.join(input_2, input_3, 'kfold.txt')
+	file_name = os.path.join(input_2, 'kfold.txt')
 
 	nber_Normal = 160
 	nber_Tumor  =  110
 
-	x_normal = np.array(range(nber_Normal))
-	x_tumor = np.array(range(nber_Tumor))
+	x_normal = np.array(range(1,nber_Normal+1))
+	x_tumor = np.array(range(1,nber_Tumor+1))
 
 	nber_Tumor  = nber_Tumor / input_1
 	nber_Normal = nber_Normal/ input_1
@@ -44,7 +40,7 @@ if __name__ ==  "__main__":
 
 	for i in range(input_1):
 		file.write("Fold "+str(i)+"\n")
-		file.write("train\n")
+		file.write("test\n")
 		file.write("Normal\n")
 		
 		if i!=input_1-1:
@@ -61,7 +57,7 @@ if __name__ ==  "__main__":
 			val_x_tumor = x_tumor[i*nber_Tumor::]
 
 		file.write(str(list(set(val_x_tumor)))+"\n")
-		file.write("test:\n")
+		file.write("train:\n")
 		file.write("Normal\n")
 		file.write(str(list(set(x_normal) - set(val_x_normal)))+"\n")
 		file.write("Tumor\n")

@@ -30,3 +30,4 @@ source $HOME/.bash_profile
 #FIELD6=$(grep "^$SGE_TASK_ID " $FILE | cut -d' ' -f7)
 
 python /share/data40T/pnaylor/Cam16/scripts/challengecam/cluster/Data_set.py /share/data40T/pnaylor/Cam16 Normal $SGE_TASK_ID 100000 version_0
+

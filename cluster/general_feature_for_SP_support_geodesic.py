@@ -36,6 +36,7 @@ def apply_with_integrator(vals_map, spp_lab, integrator_code):
             myLUT[lbl] = int(vals_map[lbl])
     sp.applyLookup(spp_lab, myLUT, im_out)
     return im_out
+
 ##---------------------------------------------------------------------------------------------------------------------------------------------------------
 ##--------------------------------------------------------------------------------------------------------------------------------------------------------- 
 class SPCSGeodesicOperator(object):
@@ -140,6 +141,154 @@ class SPCSGeodesicOperator(object):
         for i in self._channels_list:
             list_names +=[self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)]
         return list_names
+    
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##--------------------------------------------------------------------------------------------------------------------------------------------------------- 
+class SPCSGeodesicOperatorList(object):
+    """
+    Classe intermédiaire qui permet de calculer les images de superpixels contenant les valeurs après application
+    de l'opérateur de façon géodésique.
+    """
+    def __init__(self, operator_functors, channels_list, spp_method):
+        """
+        Constructeur de la classe.
+        Inputs:
+        operator_functor (functor): les opérateurs s'appliquent sur des images en NdG et doivent impérativement sortir qu'une seule "valeur" (ex: val, histo, etc).
+        channels_list (list)
+        spp_method (functor)
+        """
+        self._operator_functors = operator_functors
+        self._channels_list = channels_list
+        self._spp_method = spp_method
+        
+    def __call__(self, original_image):
+        """
+        Plusieurs étapes:
+        1) calculer les superpixels de l'image originale
+        2) calculer le dictionnaire des imagettes de superpixels
+        3) appliquer l'opérateur sur chacune de ces imagettes
+        4) intégrer sur le superpixel pour n'avoir qu'une seule valeur (si besoin)
+        --> inclus dans l'opérateur
+        5) calculer la nouvelle image entière des superpixels,  où cette fois-ci la valeur de chaque SP n'est pas son label mais celle calculée en 4. 
+        [Note: plusieurs images si plusieurs cannaux sélectionnés dans channels_list. Output: dictionnaire de ces images finales.]
+        --> output plut^ot un dictionnaire car pas besoin des images.
+        
+        
+        Ouput:
+        dic_inter: un dictionnaire tel que:
+                - chaque clé est un numéro de superpixel ex: i
+                - chaque valeur est un dictionnaire associé au superpixel i, contenant pour chaque cannal j (clés) la valeur du feature. 
+        """
+        
+        ### Etape 1: calcul des SP
+        image_sp = self._spp_method(original_image)
+        blobs = sp.computeBlobs(image_sp)
+        barys = sp.measBarycenters(image_sp,  blobs)
+        
+        ### Etape 2 :  cacul du dictionnaire intermédiaire
+        
+        ### Inititation listes:
+        if original_image.getTypeAsString()=="RGB":
+            if self._channels_list == None:
+                self._channels_list = [0,1,2]
+        elif original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+            self._channels_list = [0]
+        else:
+            raise TypeError('pb')
+        dic_final = {}
+        #for i in self._channels_list:
+        #    dic_final[i] = [] ## cette liste contiendra la valeur pour chaque superpixel
+        ###
+        dic_inter = {}
+        nb_sp = len(blobs.keys()) ## nombre de superpixels
+        bboxes_coord = sp.measBoundBoxes(image_sp) ## dictionnary of coordinates of the two points (top left, bottom right) of each bounding box.
+        sim_sp = sp.Image(image_sp)## pour garder temporairement l'imagette du superpixel
+        
+        for elem in range(nb_sp):
+            elem += 1
+            sp.crop(image_sp, bboxes_coord[elem][0],  bboxes_coord[elem][1],  bboxes_coord[elem][2] - bboxes_coord[elem][0] + 1,  bboxes_coord[elem][3] - bboxes_coord[elem][1] + 1,  sim_sp)
+            sp.subNoSat(sim_sp,  elem,  sim_sp)
+            sp.test(sim_sp,  0, 65535, sim_sp) ## imagette masque du superpixel i
+#            sim_sp.save('imagettes/bin_mask_'+str(elem)+'.png')
+#            if sim_sp.getSize()[0] == 1 and sim_sp.getSize()[1] == 1 :
+#                print "sup_" + str(elem) +"pos_" + str(bboxes_coord[elem][0]) + "_" + str(bboxes_coord[elem][1])
+#                image_sp.save("essais/sup_" + str(elem) +"pos_" + str(bboxes_coord[elem][0]) + "_" + str(bboxes_coord[elem][1]) + "_SP.png")
+#                original_image.save("essais/sup_" + str(elem) +"pos_" + str(bboxes_coord[elem][0]) + "_" + str(bboxes_coord[elem][1]) + "_orig.png")
+            if original_image.getTypeAsString()=="RGB":
+                image_slices = sp.Image()
+                sp.splitChannels(original_image, image_slices)
+                dic_orig_slices={}
+                for i in self._channels_list:
+                    sim_orig_slice= sp.Image(image_slices.getSlice(i))
+                    sp.crop(image_slices.getSlice(i), bboxes_coord[elem][0],  bboxes_coord[elem][1],  bboxes_coord[elem][2] - bboxes_coord[elem][0] + 1,  bboxes_coord[elem][3] - bboxes_coord[elem][1] + 1,  sim_orig_slice)
+                    sp.add(sim_orig_slice, 1, sim_orig_slice)
+                    sp.test(sim_sp>0, sim_orig_slice, 0, sim_orig_slice)
+                    dic_orig_slices[i] = sim_orig_slice
+                    #sim_orig_slice.save('imagettes/orig_slice_'+str(i)+'_for_sup_'+str(elem)+'.png')
+            elif original_image.getTypeAsString()=="UINT8" or original_image.getTypeAsString()=="UINT16":
+                dic_orig_slices={}
+                sim_orig_slice= sp.Image(original_image)
+                sp.crop(original_image, bboxes_coord[elem][0],  bboxes_coord[elem][1],  bboxes_coord[elem][2] - bboxes_coord[elem][0] + 1,  bboxes_coord[elem][3] - bboxes_coord[elem][1] + 1,  sim_orig_slice)
+                sp.add(sim_orig_slice, 1, sim_orig_slice)
+                sp.test(sim_sp>0, sim_orig_slice, 0, sim_orig_slice)
+                dic_orig_slices[0] = sim_orig_slice
+            dic_inter[elem] = (sim_sp,  dic_orig_slices,  barys[elem])
+            
+            
+        ### Etape 3: application de l'opérateur sur chaque imagette:
+            dic_elem_val_={}
+            
+            for i in self._channels_list:
+                # TODO: would be better to check a feature list with memory 
+                feats_from_op = None
+                for op in self._operator_functors:
+                    # todo: remove _
+                    feature_name = op.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
+                    if not feature_name in dic_final:
+                        dic_final[feature_name] = []
+                    dic_final[feature_name].append(op(dic_orig_slices[i], feats_from_op))
+                    feats_from_op = op.feats
+
+	# the list of all features (channel is hard coded in the feature names)
+        features = self.get_name()
+
+	# get a matrix nb_features x nb_superpixels with all feature values
+        Xsp = np.array([dic_final[x] for x in features])
+
+	if self._uc == "pixel":
+	    # get a vector with a concatenation of all lines of the superpixel image (label image)
+	    # the -1 comes from the fact that the label image starts with 1. 
+            indices = np.ravel(image_sp.getNumArray()) - 1        
+	    # we simply slice Xsp to get the final pixel features
+            X = Xsp[:,indices]
+        else:
+	    # in case we want to classify superpixels, the initial matrix was fine. 
+            X = Xsp
+
+        return X 
+       
+    def get_name(self):
+        list_names = []
+        for op in self._operator_functors:
+            for i in self._channels_list:           
+		# todo: remove _ 
+                feature_name = op.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)
+                list_names.append(feature_name)
+                #list_names +=[self._operator_functor.get_name()+"_"+self._spp_method.get_name()+"_for_channel_" + str(i)]
+        return list_names
+
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+##---------------------------------------------------------------------------------------------------------------------------------------------------------
+class GeneralFeatureGeodesicList(SPCSGeodesicOperatorList):
+    def __init__(self, operator_functors, channels_list, spp_method,  uc):
+        SPCSGeodesicOperatorList.__init__(self, operator_functors, channels_list, spp_method)
+        self._uc = uc
+        
+    def __call__(self,  original_image):
+        X = SPCSGeodesicOperatorList.__call__(self, original_image)
+        return X
+        
+
 ##---------------------------------------------------------------------------------------------------------------------------------------------------------
 ##---------------------------------------------------------------------------------------------------------------------------------------------------------
 class GeneralFeatureGeodesic(SPCSGeodesicOperator):
@@ -149,11 +298,15 @@ class GeneralFeatureGeodesic(SPCSGeodesicOperator):
         
     def __call__(self,  original_image):
         dic_channels_spvals = SPCSGeodesicOperator.__call__(self, original_image)
+        
         vals = np.array([])
         X_feature_t = np.array([])
 
         for elem in dic_channels_spvals.keys(): ##elem: numéro d'un cannal
-            vals_list =[dic_channels_spvals[elem][i] for i in range(len(dic_channels_spvals[elem]))] ## i : numéro d'un superpixel
+            #vals_list =[dic_channels_spvals[elem][i] for i in range(len(dic_channels_spvals[elem]))] ## i : numéro d'un superpixel
+            #array_vals = np.array(vals_list)
+            #pdb.set_trace()
+            vals_list = dic_channels_spvals[elem]
             array_vals = np.array(vals_list)
             if self._uc == "pixel":
                 image_sp = self._spp_method(original_image)

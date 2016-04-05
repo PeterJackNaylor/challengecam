@@ -139,12 +139,15 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
     """
     Base du challenge CAMELYON16 (ISBI16).
     """
-    def __init__(self,  dir_in, slide_to_do = None, type_method = 'train'):
+    def __init__(self,  dir_in, slide_to_do = None, type_method = 'train', dico_ROI = None):
         SegmDataBaseCommon.__init__(self, dir_in)
         if "Tumor" in slide_to_do:
             self._im_dir["train"] = os.path.join(dir_in,"Tumor")
         else:
             self._im_dir["train"] = os.path.join(dir_in,"Normal")
+	self._im_dir['test'] = os.path.join(dir_in, "Test")
+	self._im_dir['prediction'] = os.path.join(dir_in, "Test")
+
 #        self._im_dir["val"] = os.path.join(dir_in, "images/val")
 #        self._im_dir["test"] = os.path.join(dir_in, "images/test")
         self._segm_dir["train"] = os.path.join(dir_in, "Tumor_Mask")
@@ -155,6 +158,8 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
 #        self._res_dir["val"] = os.path.join(dir_in, "resultats/val")
         self.slide_to_do = slide_to_do
         self.type_method = type_method
+        self.dico_ROI = dico_ROI
+
     def train_training(self):
         return self.iter_training("train")
     
@@ -195,10 +200,12 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
                                  method = 'SP_ROI', mask_address = cm,
                                  N_squares = 16, verbose = False ) ### RAJOUTER ARGUMENT EN OPTION
         else:
-            
-            ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
-                                 black_spots = 20, number_of_pixels_max = 1000000,
-                                 method='grid_etienne',marge=0.1 )
+            if self.dico_ROI is None:
+                ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
+                                     black_spots = 20, number_of_pixels_max = 1000000,
+                                     method='grid_etienne',marge=0.1 )
+            else:
+                ROI_pos = [self.dico_ROI['para']]
         file_name =  os.path.basename(im_file)
         [base_name, ext] = file_name.rsplit(".", 1)
         list_of_imagettes=[]
@@ -209,7 +216,7 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
             list_of_imagettes.append((outputs[0],  outputs[1]))
         return  list_of_imagettes
 ##----------------------------------------------------------------
-    def get_im_and_segm(self, im_file, segm_dir):
+    def get_im_and_segm(self, im_file, segm_dir, N_squares=16):
         """
         Return, for a given slide which complete path_name is "im_file", a list whom each element is itself a list of three elements:
         - an imagette (smil image, RGB)
@@ -237,12 +244,15 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
             ROI_pos=ROI(im_file, ref_level = 2, disk_size = 4, thresh = 220, 
                                  black_spots = 20, number_of_pixels_max = 1000000,
                                  method = 'SP_ROI', mask_address = cm,
-                                 N_squares = 16, verbose = False ) ### RAJOUTER ARGUMENT EN OPTION
+                                 N_squares = N_squares, verbose = False ) ### RAJOUTER ARGUMENT EN OPTION
         else:
-
-            ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
-                                 black_spots = 20, number_of_pixels_max = 1000000,
-                                 method='grid_etienne',marge=0.1 )
+            # in case 
+            if self.dico_ROI is None:
+                ROI_pos=ROI(im_file, ref_level = 2, thresh = 220, 
+                                     black_spots = 20, number_of_pixels_max = 1000000,
+                                     method='grid_etienne',marge=0.1 )
+            else:
+                ROI_pos = [self.dico_ROI['para']]
         ct=0
         list_of_imagettes_and_corr_gt=[]
         for para in ROI_pos: ##### change for a better imagettes' selection method
@@ -260,24 +270,28 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
             list_of_imagettes_and_corr_gt.append((outputs[0],  outputs[1],  outputs[2]))
         return  list_of_imagettes_and_corr_gt
 ##----------------------------------------------------------------
-    def iter_training(self, code, first=None, last=None):
+    def iter_training(self, code, first=None, last=None, N_squares=16):
         """
         How to iter on the database during training.
         Each slide of the train slides' database is reduced to a pertinent set of small imagettes (crops of the slide) for training and validation of the model.
-        
+        code can be "train" or "test"
+
         Returns for each imagette: (imagette, corresponding GT, name_imagette)
         """
+       
+ 	#pdb.set_trace() 
         if self.slide_to_do is None:
             for im_file in os.listdir(self._im_dir[code])[first:last]:
                 #debug_mess("Processing file %s" % os.path.basename(im_file))
-                list_of_imagettes_and_corr_gt = self.get_im_and_segm(os.path.join(self._im_dir[code], im_file), self._segm_dir[code])
+                list_of_imagettes_and_corr_gt = self.get_im_and_segm(os.path.join(self._im_dir[code], im_file), self._segm_dir[code], N_squares=N_squares)
                 for i in range(len(list_of_imagettes_and_corr_gt)):
                     yield list_of_imagettes_and_corr_gt[i][0],  list_of_imagettes_and_corr_gt[i][1],  list_of_imagettes_and_corr_gt[i][2]
         else:
             for im_file in os.listdir(self._im_dir[code])[first:last]:
                 #debug_mess("Processing file %s" % os.path.basename(im_file))
+                # this is a string comparison (im_file is typically Normal_001.tif and slide_to_do is typically Normal_001
                 if self.slide_to_do in im_file:
-                    list_of_imagettes_and_corr_gt = self.get_im_and_segm(os.path.join(self._im_dir[code], im_file), self._segm_dir[code])
+                    list_of_imagettes_and_corr_gt = self.get_im_and_segm(os.path.join(self._im_dir[code], im_file), self._segm_dir[code], N_squares=N_squares)
                     for i in range(len(list_of_imagettes_and_corr_gt)):
                         yield list_of_imagettes_and_corr_gt[i][0],  list_of_imagettes_and_corr_gt[i][1],  list_of_imagettes_and_corr_gt[i][2]
 
@@ -289,11 +303,19 @@ class SegmChallengeCamelyon16(SegmDataBaseCommon):
         
         Returns for each imagette: (imagette, name_imagette)
         """
-        for im_file in os.listdir(self._im_dir[code])[first:last]:
-            #debug_mess("Processing file %s" % os.path.basename(im_file))
-            list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
-            for i in range(len(list_of_imagettes)):
-                yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+        if self.slide_to_do is None:
+            for im_file in os.listdir(self._im_dir[code])[first:last]:
+                #debug_mess("Processing file %s" % os.path.basename(im_file))
+            	list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
+            	for i in range(len(list_of_imagettes)):
+                	yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+	else:
+            for im_file in os.listdir(self._im_dir[code])[first:last]:
+                if self.slide_to_do in im_file:
+            	   list_of_imagettes = self.get_image(os.path.join(self._im_dir[code], im_file))
+            	   for i in range(len(list_of_imagettes)):
+                	yield list_of_imagettes[i][0],  list_of_imagettes[i][1]
+
 ##----------------------------------------------------------------
 
 

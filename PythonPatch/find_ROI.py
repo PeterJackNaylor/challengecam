@@ -23,6 +23,9 @@ from skimage import measure
 import os
 import sys
 import pdb 
+import FIMM_histo.deconvolution as deconv
+from sklearn.cluster import KMeans
+from PIL import Image
 
 def computeEvaluationMask_Peter(pixelarray,resolution,level):
     distance = nd.distance_transform_edt(255 - pixelarray[:,:])
@@ -40,7 +43,18 @@ def GetImage(c,para):
         sample=openslide.open_slide(c).read_region((para[0],para[1]),para[4],(para[2],para[3]))
     else:
         sample=c.read_region((para[0],para[1]),para[4],(para[2],para[3]))
-    return(sample)
+
+    #pdb.set_trace()
+    # do color deconvolution on the sample image. 
+    dec = deconv.Deconvolution()
+    dec.params['image_type'] = 'HEDab'
+    
+    np_img = np.array(sample)
+    dec_img = dec.colorDeconv(np_img[:,:,:3])
+    
+    new_img = Image.fromarray(dec_img.astype('uint8'))
+
+    return(new_img)
     
 
 def get_X_Y(slide,x_0,y_0,level):
@@ -107,8 +121,8 @@ def Best_Finder_rec(slide,level,x_0,y_0,size_x,size_y,image_name,ref_level,list_
                     size_x +=extra_pixels/2
                     size_y +=extra_pixels/2
                     width_xp,height_xp=get_size(slide,extra_pixels/2,extra_pixels/2,level,0)
-                    x_0 -= width_xp
-                    y_0 -= height_xp
+                    x_0 = max(x_0 - width_xp,0)
+                    y_0 = max(y_0 - height_xp,0)
                 para=[x_0,y_0,size_x,size_y,level]
                 if White_score(slide,para,thresh)<0.5:
                     list_roi.append(para)
@@ -276,6 +290,7 @@ def ROI(name,ref_level=4, disk_size=4, thresh=None, black_spots=None,
         folder=name.split(".")[0] 
     slide = openslide.open_slide(name)
     list_roi=[]
+    #pdb.set_trace()
 
     if method=='grid':
         lowest_res=len(slide.level_dimensions)-2
@@ -422,11 +437,12 @@ def visualise_cut(slide,list_pos,res_to_view=None,color='red',size=12,title=""):
     max_x,max_y=slide.level_dimensions[res_to_view]
     fig = plt.figure(figsize=(size,size ))
     ax = fig.add_subplot(111, aspect='equal')
-    ax.imshow(whole_slide,origin='lower')
+    ax.imshow(whole_slide)#,origin='lower')
     for para in list_pos:
         top_left_x,top_left_y=get_X_Y_from_0(slide,para[0],para[1],res_to_view)
         w,h=get_size(slide,para[2],para[3],para[4],res_to_view)
         p=patches.Rectangle((top_left_x,max_y-top_left_y-h), w, h, fill=False, edgecolor=color)
+        p=patches.Rectangle((top_left_x,top_left_y), w, h, fill=False, edgecolor=color)
         ax.add_patch(p)
     ax.set_title(title, size=20)
     plt.show()
@@ -489,22 +505,58 @@ def subsample(Y,version,version_para):
     n = len(Y)
     val, freq = np.unique(Y, return_counts=True )
     iter_obj = [(val[i],freq[i]) for i in range(len(val))]
-    pdb.set_trace()
-    if version == 'version_0':
+    if version == 'default':
         ## this is a purely random susampling
         ## checking for right arguments
         if 'n_sub' not in version_para:
             raise NameError("missing parameter n_sub in input dictionnary")
         else:
-            n_sub = version_para['n_sub']
+            n_val = len(val)
+            n_sub = version_para['n_sub'] / n_val
 
         list_res = []
+
         for values,frequency in iter_obj:
             index_val = np.where(Y == values)[0]
             random.shuffle(index_val)
             list_res.append(index_val[0:min(n_sub,frequency)])
         res = np.concatenate(tuple(list_res))
+    elif version == 'kmeans':
+        ## this is a purely random susampling
+        ## checking for right arguments
+        pdb.set_trace()
+        if 'n_sub' not in version_para:
+            raise NameError("missing parameter n_sub in input dictionnary")
+        else:
+            n_val = len(val)
+            n_sub = version_para['n_sub'] / n_val
+        if 'k' not in version_para:
+            raise NameError("Missing parameter k in input dictionnary")
+        else:
+            k = version_para['k']
+        if 'X' not in version_para:
+            raise NameError('Missing data X for kmeans clustering')
+            X = version_para['X']
+
+        res = []
+        for values,frequency in iter_obj:
+            index_val = np.where(Y == values)[0]
+            X_temp = X[index_val,:]
+            kmeans = KMeans(init='k-means++', n_clusters=k, n_init=10)
+            groups = kmeans.fit_predict(X_temp)
+            #val_, freq_ = np.unique(groups, return_counts=True)
+            for id_group in range(50):
+                
+                index_subgroup = np.where(groups == id_group)[0]
+                freq_ = len(index_subgroup)
+
+                index_to_pic = index_val[index_subgroup]
+                random.shuffle(index_to_pic)
+                res += list(index_to_pic[min(freq_,n_sub)])
     return res
+
+
+
 
 def from_list_string_to_list_Tumor(lists, first_part):
     res = []

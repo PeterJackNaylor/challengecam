@@ -25,68 +25,84 @@ from evaluation import my_metrics
 import segm_db_access as sdba
 import cPickle as pickle
 
+from optparse import OptionParser
+from cluster_parameters import *
+
 ##---------------------------------------------------------------------------------------------------------------------------------------
 ##---------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 if __name__ ==  "__main__":
+	description =\
+'''
+%prog - main loop for segmentation challenge .
+'''
 
-	from cluster_parameters import *
+	#from cluster_parameters import *
 
-	input_1 = sys.argv[1]
-	# input directories
-
-
-	input_2 = sys.argv[2]
-	# Tumor or Normal
-
-	input_2_bis = sys.argv[3]
-
-	input_2 = input_2 + "_" +(3-len(input_2_bis))*"0"+input_2_bis
-	### number of zeros before digit, example 007 
-	input_3 = int(sys.argv[4])
-	# Nb_samples for one slide
-
-	input_4 = sys.argv[5]
-	## version name
+    parser = OptionParser(usage="usage: %prog [options]",
+			      description=description)
+	parser.add_option("-i", "--input_folder", dest="input_folder",
+			  help="input folder")
+	parser.add_option("-o", "--output_folder", dest="output_folder",
+			  help="output folder")
+  	parser.add_option("-t", "--type", dest="img_type",
+			  help="type of the image; can be either tumor or normal.")
+	parser.add_option("--id", dest="img_id", 
+                          help="image id.")    
+    parser.add_option("--nb_samples", dest="nb_samples",
+                          help="number of pixels drawn from the slide.")
+	parser.add_option("--nb_images", dest="nb_images",
+                          help="number of images drawn from the slide.")
 
 
-	if input_3 == 0:
-		input_3 = None
+	(options, args) = parser.parse_args()
+
+	if (options.input_folder is None) or (options.output_folder is None) or (options.img_id is None):
+		parser.error("incorrect number of arguments!")
 	
-	saving_location = os.path.join(input_1, input_4, input_2)
-	if os.path.isdir( os.path.join(input_1, input_4) ):
-		if not os.path.isdir(saving_location):
-			os.mkdir(saving_location)
+    if not options.nb_samples is None:
+		nb_samples=int(options.nb_samples)
 	else:
-		print "No version named folder created"
-		raise 
-	db_server = sdba.SegmChallengeCamelyon16(input_1, slide_to_do= input_2)
+		nb_samples = 100000
 
-	classif = sc.PixelClassification(db_server, input_2, pixel_features_list, nb_samples=input_3)
-	print "starting " + input_2
+	if not options.nb_images is None:
+		nb_images = int(options.nb_images)
+	else:
+		nb_images = 16
+
+        slide_id = '%s_%03i' % (options.img_type, int(options.img_id))
+        
+	saving_location = os.path.join(options.output_folder, slide_id)	  
+	if not os.path.isdir(saving_location):
+	    print 'making ', saving_location
+	    os.makedirs(saving_location)
+	   
+	db_server = sdba.SegmChallengeCamelyon16(options.input_folder, slide_to_do=slide_id)
+
+	classif = sc.PixelClassification(db_server, slide_id, pixel_features_list, nb_samples=nb_samples)
+	print "starting " + slide_id
 	
 	start = timeit.default_timer()
 
-	X, Y, dico= classif.get_X_Y_for_train("train")
+	X, Y, dico= classif.get_X_Y_for_train("train", N_squares=nb_images)
 	X = classif.deal_with_missing_values_2(X)
  	
 	stop = timeit.default_timer()
 
-	print "time for "+input_2+" "+str(stop-start)
+	print "time for " + slide_id + " " + str(stop-start)
 
- 	print "ending " + input_2
+ 	print "ending " + slide_id
 	
-	nature = input_2.split('_')[0]
-
-	image_sauv_name_pickle = os.path.join(saving_location ,  input_2 + ".pickle")
-	image_sauv_name_npy    = os.path.join(saving_location ,  input_2 + ".npy")
+	image_sauv_name_pickle = os.path.join(saving_location ,  slide_id + ".pickle")
+	image_sauv_name_npy    = os.path.join(saving_location ,  slide_id + ".npy")
   
 	im_pickle = open(image_sauv_name_pickle,  'w')
 
 	pickle.dump(dico,  im_pickle)
 	im_pickle.close()
-	print "save new matrix " + input_2
+	
+    print "save new matrix " + slide_id
 	np.save(image_sauv_name_npy,  X)
-	np.save(os.path.join(saving_location ,  input_2 + "_y_.npy"), Y)
+	np.save(os.path.join(saving_location ,  slide_id + "_y_.npy"), Y)

@@ -1,13 +1,15 @@
 from __future__ import division
 
-from sklearn.ensemble.forest import six,division,ClassifierMixin, RegressorMixin,Parallel, delayed,_LearntSelectorMixin
-from sklearn.ensemble.forest import r2_score,OneHotEncoder,DecisionTreeClassifier, DecisionTreeRegressor,ExtraTreeClassifier, ExtraTreeRegressor
-from sklearn.ensemble.forest import DTYPE, DOUBLE,check_random_state, check_array, compute_sample_weight
-from sklearn.ensemble.forest import DataConversionWarning, NotFittedError,BaseEnsemble, _partition_estimators,bincount
+from sklearn.ensemble.forest import six, division, ClassifierMixin, RegressorMixin, Parallel, delayed, _LearntSelectorMixin
+from sklearn.ensemble.forest import r2_score, OneHotEncoder, DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeClassifier, ExtraTreeRegressor
+from sklearn.ensemble.forest import DTYPE, DOUBLE, check_random_state, check_array, compute_sample_weight
+from sklearn.ensemble.forest import DataConversionWarning, NotFittedError, BaseEnsemble, _partition_estimators, bincount
 from sklearn.ensemble.forest import check_classification_targets
 
 
 import warnings
+import random
+
 from warnings import warn
 
 from abc import ABCMeta, abstractmethod
@@ -15,18 +17,35 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.sparse import issparse
 
+MAX_INT = np.iinfo(np.int32).max
+
+import pdb
+
 __all__=["PeterRandomForestClassifier"]
 
 ###################################### Peter's modification 
         ## so that a tree can subsampling a samller size
-def _generate_sample_indices_Peter(random_state, n_samples,n_bootstrap=None):
+def _generate_sample_indices_Peter(random_state, n_samples,n_bootstrap=None , y=None):
     
     """Private function used to _parallel_build_trees function."""
     random_instance = check_random_state(random_state)
     if n_bootstrap is None:
         sample_indices = random_instance.randint(0, n_samples, n_samples)
     else:
-        sample_indices = random_instance.randint(0, n_samples, n_bootstrap)
+        if y is None:
+            sample_indices = random_instance.randint(0, n_samples, n_bootstrap)
+        else:
+            sample_indices_y_0 = np.where( y == 0 )[0]
+            sample_indices_y_1 = np.where( y != 0 )[0]
+            xxx = list(sample_indices_y_0)
+            yyy = list(sample_indices_y_1)
+            random.shuffle(xxx)
+            random.shuffle(yyy)
+            sample_indices_y_0 = np.array(xxx)[0:(n_bootstrap/2)]
+            sample_indices_y_1 = np.array(yyy)[0:(n_bootstrap/2)]
+
+            sample_indices = np.array( list(sample_indices_y_0) + list(sample_indices_y_1) )
+            random.shuffle(sample_indices)
     return sample_indices
     
 def _generate_unsampled_indices_Peter(random_state, n_samples, n_bootstrap=None):
@@ -51,8 +70,7 @@ def _parallel_build_trees_Peter(tree, forest, X, y, sample_weight, tree_idx, n_t
             curr_sample_weight = np.ones((n_samples,), dtype=np.float64)
         else:
             curr_sample_weight = sample_weight.copy()
-
-        indices = _generate_sample_indices_Peter(tree.random_state, n_samples, n_bootstrap)
+        indices = _generate_sample_indices_Peter(tree.random_state, n_samples, n_bootstrap, y)
         sample_counts = bincount(indices, minlength=n_samples)
         curr_sample_weight *= sample_counts
 
@@ -69,6 +87,9 @@ def _parallel_build_trees_Peter(tree, forest, X, y, sample_weight, tree_idx, n_t
 
     return tree
     
+def _parallel_helper(obj, methodname, *args, **kwargs):
+    """Private helper to workaround Python 2 pickle limitations"""
+    return getattr(obj, methodname)(*args, **kwargs)
     
     
 class PeterBaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
