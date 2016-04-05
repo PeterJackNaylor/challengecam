@@ -7,8 +7,11 @@ import cPickle as pickle
 
 from optparse import OptionParser
 
-#import pdb
+import pdb
 import gc
+import shutil
+from sklearn.preprocessing import StandardScaler 
+
 
 class ImagePredictor(object):
     def __init__(self, classifier_name, feature_folder, output_folder, img_orig_folder=None):
@@ -53,6 +56,10 @@ class ImagePredictor(object):
             print 'processing %i / %i : %s' % (i, nb_files, img_id)
             i += 1
 
+            new_filename = os.path.join(subsample_output_folder, feature_file)
+	    if os.path.isfile(new_filename):
+	        continue
+
             Xs, new_width, new_height = self.subsample(os.path.join(slide_folder, feature_file), subsample)
                 
             new_filename = os.path.join(subsample_output_folder, feature_file)
@@ -81,10 +88,20 @@ class ImagePredictor(object):
         slide_folder = os.path.join(self.feature_folder, slidename)
         feature_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', 
                                os.listdir(slide_folder))
+	feature_files.reverse()
 
         crop_output_folder = os.path.join(self.output_folder, 'crops', slidename)
         if not os.path.isdir(crop_output_folder):
             os.makedirs(crop_output_folder)
+
+	# check whether a subsampling has been performed
+	subsample_folder = os.path.join(self.output_folder, 'subsample', slidename)
+	if os.path.isdir(subsample_folder):
+	    img_subsample_files = filter(lambda x: os.path.splitext(x)[-1] == '.npy', os.listdir(subsample_folder))
+	    #img_subsample_files.reverse()
+	else:
+	    subsample_folder = None
+	    img_subsample_files = []
 
         if upper_limit is None:
             upper_limit = len(feature_files)
@@ -92,17 +109,45 @@ class ImagePredictor(object):
         nb_files = len(feature_files[:upper_limit])
         i = 1
         
+	#local_folder = '/tmp/%s' % slidename
+	#if not os.path.isdir(local_folder):
+	#    os.makedirs(local_folder)
+ 	
         for feature_file in feature_files[:upper_limit]:
             start_time = time.time()
             print 'processing %i / %i : %s' % (i, nb_files, os.path.splitext(os.path.basename(feature_file))[0])
             i += 1
- 
+            img_full_filename = os.path.join(crop_output_folder, 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))[0])
+	    if os.path.isfile(img_full_filename):
+	        print 'skipping %s' % img_full_filename
+                continue
+
+ 	    #shutil.copy(os.path.join(slide_folder, feature_file), local_folder)
             if adapt_size:
-            	img = self.process_file_small(os.path.join(slide_folder, feature_file), subsample)
-	    	time.sleep(3)
+	        if feature_file in img_subsample_files:
+		    # in this case we use the subsampled (small) file
+		    full_filename = os.path.join(subsample_folder, feature_file)
+		    print 'reading small matrix : %s' % full_filename
+		    Xs = np.load(full_filename)
+
+                    info = os.path.splitext(os.path.basename(feature_file))[0].split('_')
+                    x = int(info[2])
+                    y = int(info[3])
+                    width = int(info[4])
+                    height = int(info[5])
+
+                    col_indices = np.arange(0, width, step=subsample)
+                    row_indices = np.arange(0, height, step=subsample)
+                    new_width = len(col_indices)
+                    new_height = len(row_indices)
+
+            	    img = self.process_file_small(full_filename, subsample,
+					          Xs=Xs, nw=new_width, nh=new_height)
+	        else:
+            	    img = self.process_file_small(os.path.join(slide_folder, feature_file), subsample)
             else: 
                 img = self.process_file(os.path.join(slide_folder, feature_file), subsample)
-                
+            #os.remove(os.path.join(local_folder, feature_file))    
             img_filename = 'probmap_%s.png' % os.path.splitext(os.path.basename(feature_file))[0]
             skimage.io.imsave(os.path.join(crop_output_folder, img_filename), img)
             
@@ -156,7 +201,7 @@ class ImagePredictor(object):
         
         return img
 
-    def process_file_small(self, data_filename, subsample=None):
+    def process_file_small(self, data_filename, subsample=None, Xs=None, nw=None, nh=None, normalize=True):
 
         info = os.path.splitext(os.path.basename(data_filename))[0].split('_')
         x = int(info[2])
@@ -166,7 +211,8 @@ class ImagePredictor(object):
 
 	start_time = time.time()
 
-        X = self.read_data(data_filename)
+	if (subsample is None) or (Xs is None):
+            X = self.read_data(data_filename)
 
         difftime = time.time() - start_time
         ms = np.int(np.floor((difftime - np.floor(difftime)  )   * 1000))
@@ -177,25 +223,33 @@ class ImagePredictor(object):
             probs = self.classifier.predict_proba(X)
             img = probs.reshape((width, height))                  
         else:
-            col_indices = np.arange(0, width, step=subsample)
-            row_indices = np.arange(0, height, step=subsample)
-            new_width = len(col_indices)
-            new_height = len(row_indices)
-            A = np.zeros((width, height))
-            B = np.zeros((width, height))
-            A[col_indices,:] = 1
-            B[:,row_indices] = 1
-            C = A * B
-            Cvec = np.ravel(C)
-            indices = np.where(Cvec>0)[0]
+	    if Xs is None:
+	        # perform subsampling
+                col_indices = np.arange(0, width, step=subsample)
+                row_indices = np.arange(0, height, step=subsample)
+                new_width = len(col_indices)
+                new_height = len(row_indices)
+                A = np.zeros((width, height))
+                B = np.zeros((width, height))
+                A[col_indices,:] = 1
+                B[:,row_indices] = 1
+                C = A * B
+                Cvec = np.ravel(C)
+                indices = np.where(Cvec>0)[0]
             
-            #N = X.shape[0]
-            #indices = np.arange(0, N, step=subsample)
-            Xs = X[indices,:]
-            Ys = self.classifier.predict_proba(Xs)
-            probs = Ys[:,1]
-            img = probs.reshape((new_width, new_height))
-            
+                #N = X.shape[0]
+                #indices = np.arange(0, N, step=subsample)
+                Xs = X[indices,:]
+                Ys = self.classifier.predict_proba(Xs)
+                probs = Ys[:,1]
+                img = probs.reshape((new_width, new_height))
+            else:
+		# in this case, we use the downsampled version from the argument list
+		print 'using matrix argument' 
+		Xn = StandardScaler().fit_transform(Xs) 
+		Ys = self.classifier.predict_proba(Xn)
+		probs = Ys[:,1]
+		img = probs.reshape((nw, nh))
         return img.T
 
     def subsample(self, data_filename, subsample=None):

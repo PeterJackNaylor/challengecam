@@ -55,6 +55,8 @@ if __name__ ==  "__main__":
 	                  help="resolution", metavar="int")
 	parser.add_option("-o", "--output", dest="out",
 	                  help="Output folder", metavar="folder")
+	parser.add_option("--subsample_folder", dest="subsample_folder",
+	                  help="Subsample folder", metavar="folder")
 
 	(options, args) = parser.parse_args()
 	para_ = [int(options.x),int(options.y),int(options.w),int(options.h),int(options.res)]
@@ -104,6 +106,8 @@ if __name__ ==  "__main__":
 	#X = classif.deal_with_missing_values_2(X)
  	# we can deal with missing value later. 
 
+	#if not options.subsample_folder is None:
+         
 	stop = timeit.default_timer()
 
 	print "time for "+slide_to_do+" "+str(stop-start)

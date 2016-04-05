@@ -22,7 +22,7 @@ SOURCE_FOLDER=/cbio/donnees/twalter/src/challengecam/cluster
 
 source /cbio/donnees/twalter/src/challengecam/cluster/bash_files/twalter_code_profile
 
-python $SOURCE_FOLDER/image_prediction.py --classifier_name=/share/data40T_v2/challengecam_results/training/best_classifier.pickle --feature_folder=/share/data40T_v2/challengecam_results/Pred_data_set/ --output_folder=/share/data40T_v2/challengecam_results/probmap/pred_data_set --subsample_factor=16 --slide_number=$SGE_TASK_ID
+python $SOURCE_FOLDER/image_prediction2.py --classifier_name=/share/data40T_v2/challengecam_results/training/best_classifier.pickle --feature_folder=/share/data40T_v2/challengecam_results/results_on_train --output_folder=/share/data40T_v2/challengecam_results/probmap/train_data_set --subsample_factor=16 --slide_number=001
 
 
 
